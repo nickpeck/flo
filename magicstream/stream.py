@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from functools import wraps
-from typing import TypeVar, Generic, Callable, Optional, List
+from typing import TypeVar, Generic, Callable, Optional, List, Coroutine, Any
 import traceback
 
 T = TypeVar('T')
@@ -15,8 +15,12 @@ def bind(func, *args, **kwargs):
 
 class Subscriber(Generic[T]):
     def __init__(self,
-        on_next: Callable[[T], Optional[Stream[T]]] = lambda x : None):
-        self.on_next = on_next
+        on_next: Callable[[T], Any] = lambda x : None):
+        self._on_next = on_next
+
+    async def on_next(self, value):
+        await asyncio.coroutine(self._on_next)(value)
+        return self
 
 class Stream(Generic[T]):
     def __init__(self, head=None):
@@ -25,67 +29,68 @@ class Stream(Generic[T]):
             self.head = head
         self.subscribers = []
 
-    def subscribe(self, subscriber: Subscriber[T]) -> None:
+    async def subscribe(self, subscriber: Subscriber[T]) -> Stream[T]:
         self.subscribers.append(subscriber)
-        if self.head:
-            subscriber.on_next(self.head)
+        if self.head is not None:
+            await subscriber.on_next(self.head)
+        return self
 
     def peek(self) -> Optional[T]:
         return self.head
 
-    def bindTo(self, other: Stream[T]) -> Stream[T]:
+    async def bindTo(self, other: Stream[T]) -> Stream[T]:
         s = Subscriber[T](
             on_next = lambda head: other.write(head)
         )
-        self.subscribe(s)
+        await self.subscribe(s)
         return other
 
-    def joinTo(self, other: Stream[T]) -> Stream[T]:
+    async def joinTo(self, other: Stream[T]) -> Stream[T]:
         joined = Stream[T]()
-        s1 = Subscriber(
+        s1 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        self.subscribe(s1)
-        s2 = Subscriber(
+        await self.subscribe(s1)
+        s2 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        other.subscribe(s2)
+        await other.subscribe(s2)
         return joined
 
-    def filter(self, expr: Callable[[T], bool]) -> Stream[T]:
+    async def filter(self, expr: Callable[[T], bool]) -> Stream[T]:
         filtered_stream = Stream[T]()
-        def _next(head: T):
+        async def _next(head: T):
             if expr(head):
-                filtered_stream.write(head)
+                await filtered_stream.write(head)
         subscriber = Subscriber(
             on_next = _next
         )
-        self.subscribe(subscriber)
+        await self.subscribe(subscriber)
         return filtered_stream
 
-    def write(self, item: T) -> Stream[T]:
+    async def write(self, item: T) -> Stream[T]:
         self.head = item
+        _head = self.head
 
-        '''asyncio.wait(
-            [s.on_next(_head))
-                for s in self.subscribers])'''
-        [s.on_next(self.head) for s in self.subscribers]
+        if self.subscribers != []:
+            await asyncio.wait(
+                [s.on_next(_head)
+                    for s in self.subscribers])
         return self
 
     @staticmethod
-    def computed(func: Callable[[List[Stream[T]]], T],
+    async def computed(func: Callable[[List[Stream[T]]], T],
         dependants: List[Stream[T]]) -> Stream[T]:
 
         output_stream = Stream[T]()
         bound_func = bind(func, *dependants)
-        def _on_next(x):
-            # TODO check none of them have 'None' as head
+        async def _on_next(x):
             nonlocal bound_func
             nonlocal output_stream
             nonlocal dependants
             if None in [dep.peek() for dep in dependants]:
                 return
-            output_stream.write(bound_func())
+            await output_stream.write(bound_func())
 
 
         subscriber = Subscriber[T](
@@ -93,5 +98,5 @@ class Stream(Generic[T]):
         )
 
         for dep in dependants:
-            dep.subscribe(subscriber)
+            await dep.subscribe(subscriber)
         return output_stream
