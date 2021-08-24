@@ -1,10 +1,10 @@
 import asyncio
 import unittest
-from magicstream import Stream, Subscriber
+from magicstream import AsyncStream, Subscriber
 
-class StreamTests(unittest.TestCase):
+class AsyncStreamTests(unittest.TestCase):
     def test_stream_creation(self):
-        stream = Stream[int]()
+        stream = AsyncStream[int]()
         assert stream.peek() == None
 
     def test_stream_subscribe(self):
@@ -14,7 +14,7 @@ class StreamTests(unittest.TestCase):
                 nonlocal subscriber_called_with
                 subscriber_called_with = i
 
-            stream = Stream[int](10)
+            stream = AsyncStream[int](10)
             subscriber = Subscriber[int](
                 on_next = lambda i : _callback(i)
             )
@@ -27,13 +27,13 @@ class StreamTests(unittest.TestCase):
         assert result == 10
 
     def test_stream_peek(self):
-        stream = Stream[int](10)
+        stream = AsyncStream[int](10)
         assert stream.peek() == 10
 
     def test_stream_bind_to(self):
         async def _test():
-            stream1 = Stream[int]()
-            stream2 = Stream[int]()
+            stream1 = AsyncStream[int]()
+            stream2 = AsyncStream[int]()
             await stream1.bindTo(stream2)
             await stream1.write(10)
             return stream2.peek()
@@ -42,10 +42,21 @@ class StreamTests(unittest.TestCase):
         result = loop.run_until_complete(_test())
         assert result == 10
 
+    def test_stream_cannot_bind_to_itself(self):
+        async def _test():
+            stream1 = AsyncStream[int]()
+            with self.assertRaises(Exception) as e:
+                await stream1.bindTo(stream1)
+            return e.exception.args
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(_test())
+        assert result == ("AsyncStream cannot bind to itself",)
+            
     def test_joinTo(self):
         async def _test():
-            stream1 = Stream[str]()
-            stream2 = Stream[str]()
+            stream1 = AsyncStream[str]()
+            stream2 = AsyncStream[str]()
             stream3 = await stream1.joinTo(stream2)
 
             subscriber_called_with = []
@@ -58,13 +69,24 @@ class StreamTests(unittest.TestCase):
             )
             await stream3.subscribe(subscriber)
 
-            await stream1.write("bob")
-            await stream2.write("holness")
+            await stream1.write("hello")
+            await stream2.write("world")
             return subscriber_called_with
 
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(_test())
-        assert result == ["bob", "holness"]
+        assert result == ["hello", "world"]
+
+    def test_stream_cannot_join_to_itself(self):
+        async def _test():
+            stream1 = AsyncStream[int]()
+            with self.assertRaises(Exception) as e:
+                await stream1.joinTo(stream1)
+            return e.exception.args
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(_test())
+        assert result == ("AsyncStream cannot join to itself",)
 
     def test_filter(self):
         async def _test():
@@ -73,7 +95,7 @@ class StreamTests(unittest.TestCase):
                 nonlocal subscriber_called_with
                 subscriber_called_with.append(i)
 
-            stream1 = Stream[int]()
+            stream1 = AsyncStream[int]()
             stream2 = await stream1.filter(lambda x : x > 5)
             subscriber = Subscriber[int](
                 on_next = lambda i : _callback(i)
@@ -90,17 +112,21 @@ class StreamTests(unittest.TestCase):
 
     def test_computed(self):
         async def _test():
-            stream1 = Stream[int]()
-            stream2 = Stream[int]()
+            stream1 = AsyncStream[int]()
+            stream2 = AsyncStream[int]()
 
-            stream3 = await Stream.computed(
-                lambda a,b: a.head+b.head, [stream1, stream2])
+            stream3 = await AsyncStream.computed(
+                lambda a,b: a+b, [stream1, stream2])
 
             await stream1.write(3)
             await stream2.write(4)
+            await stream1.write(2)
+            await stream1.write(5)
+            await stream2.write(6)
             return stream3.peek()
 
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(_test())
-        assert result == 7
+        # nb the result is only that of the last 'state' (5 + 6)
+        assert result == 11
         

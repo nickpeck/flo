@@ -1,1 +1,1 @@
-from . stream import Stream, Subscriber
+from . stream import AsyncStream, Subscriber
