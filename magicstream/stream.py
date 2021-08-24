@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from functools import wraps
 from typing import TypeVar, Generic, Callable, Optional, List
+import traceback
 
 T = TypeVar('T')
 
@@ -77,10 +78,20 @@ class Stream(Generic[T]):
 
         output_stream = Stream[T]()
         bound_func = bind(func, *dependants)
+        def _on_next(x):
+            # TODO check none of them have 'None' as head
+            nonlocal bound_func
+            nonlocal output_stream
+            nonlocal dependants
+            if None in [dep.peek() for dep in dependants]:
+                return
+            output_stream.write(bound_func())
+
+
+        subscriber = Subscriber[T](
+            on_next= _on_next
+        )
+
         for dep in dependants:
-            dep.subscribe(
-                Subscriber(
-                    on_next=lambda x: output_stream.write(bound_func())
-                )
-            )
+            dep.subscribe(subscriber)
         return output_stream

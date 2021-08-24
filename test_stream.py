@@ -69,12 +69,13 @@ class StreamTests(unittest.TestCase):
         assert subscriber_called_with == [6,7,8,9]
 
     def test_computed(self):
-        stream1 = Stream[int](0)
-        stream2 = Stream[int](0)
+        stream1 = Stream[int]()
+        stream2 = Stream[int]()
 
         stream3 = Stream.computed(
             lambda a,b: a.head+b.head, [stream1, stream2])
 
         stream1.write(3)
         stream2.write(4)
+        assert stream3.peek() == 7
         
