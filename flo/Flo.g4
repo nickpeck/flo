@@ -22,7 +22,8 @@ DIV	:	'/';
 MOD	:	'%';
 EQUALS  :       '=';
 NEGATION :      '!';
-BINDTO :      '->' | '<-';
+BINDTO :      '->';
+PUTVALUE :    '<-';
 DOT :      '.';
 COLON: ':';
 OR: 'or';
@@ -103,14 +104,21 @@ compound_expression_or
 	:
 		compound_expression_and
 		(
-			OR compound_expression
+			OR compound_expression_putvalue
+		)*	
+	;
+compound_expression_putvalue
+	:
+		compound_expression_or
+		(
+			PUTVALUE compound_expression
 		)*	
 	;
 	
 compound_expression: 
-	compound_expression_or 
+	compound_expression_putvalue 
 	(
-		BINDTO compound_expression_or
+		BINDTO compound_expression_putvalue
 	)*
 ;
 

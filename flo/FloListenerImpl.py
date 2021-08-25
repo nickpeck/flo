@@ -1,9 +1,11 @@
+import asyncio
 import sys
 
 from antlr4 import *
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
+from . runtime import setup_default_runtime
 
 class FloListenerImpl(FloListener):
     """
@@ -24,10 +26,13 @@ class FloListenerImpl(FloListener):
 
     def __init__(self):
         super().__init__()
+        self.register = []
+        self.module = asyncio.run(setup_default_runtime())
 
     # Enter a parse tree produced by FloParser#number.
     def enterNumber(self, ctx:FloParser.NumberContext):
-        pass
+        value = int(ctx.children[0].getText())
+        self.register.append(value)
 
     # Exit a parse tree produced by FloParser#number.
     def exitNumber(self, ctx:FloParser.NumberContext):
@@ -36,7 +41,8 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#string.
     def enterString(self, ctx:FloParser.StringContext):
-        pass
+        value = ctx.children[0].getText()[1:-1]
+        self.register.append(value)
 
     # Exit a parse tree produced by FloParser#string.
     def exitString(self, ctx:FloParser.StringContext):
@@ -45,7 +51,11 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#bool.
     def enterBool(self, ctx:FloParser.BoolContext):
-        pass
+        value = ctx.children[0].getText()
+        if value == 'true':
+            self.register.append(True)
+        elif value == 'false':
+            self.register.append(False)
 
     # Exit a parse tree produced by FloParser#bool.
     def exitBool(self, ctx:FloParser.BoolContext):
@@ -63,7 +73,8 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#id.
     def enterId(self, ctx:FloParser.IdContext):
-        pass
+        id = ctx.children[0].getText()
+        self.register.append(self.module.locals[id])
 
     # Exit a parse tree produced by FloParser#id.
     def exitId(self, ctx:FloParser.IdContext):
@@ -81,12 +92,10 @@ class FloListenerImpl(FloListener):
         else:
             _type = ctx.children[3].getText()
             print("dec", ctx.children[1].getText(), _type)
-        pass
 
     # Exit a parse tree produced by FloParser#declaration.
     def exitDeclaration(self, ctx:FloParser.DeclarationContext):
         pass
-
 
     # Enter a parse tree produced by FloParser#compound_expression_paren.
     def enterCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
@@ -141,6 +150,16 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
         pass
 
+    # Enter a parse tree produced by FloParser#compound_expression_putvalue.
+    def enterCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compound_expression_putvalue.
+    def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
+        if len(ctx.children) == 3:
+            asyncio.run(self.register[0].write(self.register[1]))
+            self.register = []
+        pass
 
     # Enter a parse tree produced by FloParser#compound_expression.
     def enterCompound_expression(self, ctx:FloParser.Compound_expressionContext):
@@ -153,7 +172,7 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#statement.
     def enterStatement(self, ctx:FloParser.StatementContext):
-        pass
+        self.register = []
 
     # Exit a parse tree produced by FloParser#statement.
     def exitStatement(self, ctx:FloParser.StatementContext):
@@ -172,13 +191,9 @@ class FloListenerImpl(FloListener):
     # Enter a parse tree produced by FloParser#module.
     def enterModule(self, ctx:FloParser.ModuleContext):
         mod_name = ctx.children[1].getText()
-        print("Module", mod_name)
-        pass
+        if mod_name == "main":
+            return
 
     # Exit a parse tree produced by FloParser#module.
     def exitModule(self, ctx:FloParser.ModuleContext):
         pass
-
-if __name__ == "__main__":
-    file = sys.argv[1]
-    FloListenerImpl.loadModule(file)

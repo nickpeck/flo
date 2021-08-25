@@ -1,4 +1,4 @@
-# Generated from magicstream\Flo.g4 by ANTLR 4.7
+# Generated from flo\Flo.g4 by ANTLR 4.7
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .FloParser import FloParser
@@ -113,6 +113,15 @@ class FloListener(ParseTreeListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_or.
     def exitCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#compound_expression_putvalue.
+    def enterCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compound_expression_putvalue.
+    def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
         pass
 
 
