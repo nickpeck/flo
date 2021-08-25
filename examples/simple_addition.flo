@@ -2,7 +2,7 @@ module main {
     dec x : int
     dec y : int
     dec z : int = x+y
-    stdout <- z
+    z->stdout
     x <- 8
     y <- 9
 }

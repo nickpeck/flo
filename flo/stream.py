@@ -34,6 +34,12 @@ class AsyncStream(Generic[T]):
             self._v = head
         self._subscribers = []
 
+    def __str__(self):
+        return "<AsyncStream {}>".format(self._v)
+
+    def __repr__(self):
+        return str(self)
+
     async def subscribe(self, subscriber: Subscriber[T]) -> AsyncStream[T]:
         """Add a new subscriber and return the stream.
         If the subscriber is already added,

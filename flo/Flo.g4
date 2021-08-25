@@ -57,7 +57,9 @@ atom: STRING #string
 	| ID #id
 	| atom DOT atom #getAttrib;
 
-declaration: DEC (INPUT|OUTPUT)? ID COLON ID (EQUALS compound_expression)?;
+declaration: 
+    (DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
+    | (DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration;
 
 compound_expression_paren
 	:
