@@ -1,0 +1,8 @@
+module main {
+    dec x : int
+    dec y : int
+    dec z : int = x+y
+    stdout <- z
+    x <- 8
+    y <- 9
+}
