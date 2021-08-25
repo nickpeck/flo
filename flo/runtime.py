@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import sys
-from typing import Any
+from typing import Any, Union
 
 from . import AsyncStream, Subscriber
 
@@ -10,17 +12,18 @@ class Module:
         self.outputs = {}
         self.locals = opts
 
-    def declare_local(self, name: str, component):
-        self.locals[name] = component
+    def declare_local(self, name: str, 
+        attr: Union[AsyncStream, Component, Module]):
+        self.locals[name] = attr
 
-    def declare_input(self, name: str, component):
-        self.inputs[name] = component
+    def declare_input(self, name: str, pipe: AsyncStream):
+        self.inputs[name] = pipe
 
-    def declare_output(self, name: str, component):
-        self.outputs[name] = component
+    def declare_output(self, name: str, pipe: AsyncStream):
+        self.outputs[name] = pipe
 
     def __str__(self):
-        return "<Module {}>".format(self.name)
+        return "<Module '{}'>".format(self.name)
 
     def __repr__(self):
         return str(self)
@@ -42,7 +45,7 @@ class Component(Module):
         return c
 
     def __str__(self):
-        return "<Component {}>".format(self.name)
+        return "<Component '{}'>".format(self.name)
 
 class Runtime(Subscriber[str]):
     def _restart(self):
@@ -56,15 +59,15 @@ class Runtime(Subscriber[str]):
 async def setup_default_runtime():
     active_runtime = AsyncStream[str]
 
-    _builtin_stdout = AsyncStream[str]()
+    _builtin_stdout = AsyncStream[Any]()
     await _builtin_stdout.subscribe(
         Subscriber[str](
-            on_next = lambda s : sys.stdout.write(s)))
+            on_next = lambda s : sys.stdout.write(str(s))))
 
-    _builtin_stderr = AsyncStream[str]()
+    _builtin_stderr = AsyncStream[Any]()
     await _builtin_stderr.subscribe(
         Subscriber[str](
-            on_next = lambda s : sys.stderr.write(s)))
+            on_next = lambda s : sys.stderr.write(str(s))))
 
     _builtin_runtime = AsyncStream[str]()
     await _builtin_runtime.subscribe(active_runtime)

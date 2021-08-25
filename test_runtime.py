@@ -13,7 +13,7 @@ class RuntimeTests(unittest.TestCase):
 
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(_test())
-        assert str(result) == "<Module main>"
+        assert str(result) == "<Module 'main'>"
 
 class ModuleTests(unittest.TestCase):
     def test_module_creation(self):
@@ -63,4 +63,4 @@ class ComponentTests(unittest.TestCase):
         comp = runtime.Component("mycomp", x=3, y=4)
         with self.assertRaises(Exception) as e:
             comp2 = comp.duplicate(z=5)
-        assert e.exception.args == ("<Component mycomp> has no local attr 'z'",)
+        assert e.exception.args == ("<Component 'mycomp'> has no local attr 'z'",)
