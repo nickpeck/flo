@@ -11,7 +11,10 @@ class Module:
         self.inputs = {}
         self.outputs = {}
         self.locals = opts
+        self.parent = None
 
+    # TODO what about key conflicts between these three groups. 
+    # Is this the best way to represent this?
     def declare_local(self, name: str, 
         attr: Union[AsyncStream, Component, Module]):
         self.locals[name] = attr

@@ -2,11 +2,11 @@ module main {
     component adder {
         dec input x : int
         dec input y : int
-        dec output z = x+y
+        dec z : int = x+y
     }
     
-    dec a = new adder
-    stdout <- a.x
+    dec a : adder
+    a.z -> stdout
     a.x <- 8
     a.y <- 9
 }
