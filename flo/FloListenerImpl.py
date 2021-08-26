@@ -235,7 +235,7 @@ class FloListenerImpl(FloListener):
                 self.register.append(computed)
             elif ctx.children[1].getText() == '-':
                 computed = asyncio.run(AsyncStream.computed(
-                    lambda a,b: a+b,
+                    lambda a,b: a-b,
                     self.register[-2:]
                 ))
                 self.register = self.register[:-2]
