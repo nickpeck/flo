@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from magicstream import runtime
+from flo import runtime
 
 class RuntimeTests(unittest.TestCase):
     def test_runtime_creation(self):
@@ -11,8 +11,9 @@ class RuntimeTests(unittest.TestCase):
             ar = await runtime.setup_default_runtime()
             return ar
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        #loop = asyncio.get_event_loop()
+        #result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert str(result) == "<Module 'main'>"
 
 class ModuleTests(unittest.TestCase):

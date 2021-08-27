@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from magicstream import AsyncStream, Subscriber
+from flo import AsyncStream, Subscriber
 
 class AsyncStreamTests(unittest.TestCase):
     def test_stream_creation(self):
@@ -20,9 +20,8 @@ class AsyncStreamTests(unittest.TestCase):
             )
             await stream.subscribe(subscriber)
             return subscriber_called_with
-            
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+
+        result = asyncio.run(_test())
 
         assert result == 10
 
@@ -38,8 +37,7 @@ class AsyncStreamTests(unittest.TestCase):
             await stream1.write(10)
             return stream2.peek()
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert result == 10
 
     def test_stream_cannot_bind_to_itself(self):
@@ -49,8 +47,7 @@ class AsyncStreamTests(unittest.TestCase):
                 await stream1.bindTo(stream1)
             return e.exception.args
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert result == ("AsyncStream cannot bind to itself",)
             
     def test_joinTo(self):
@@ -73,8 +70,7 @@ class AsyncStreamTests(unittest.TestCase):
             await stream2.write("world")
             return subscriber_called_with
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert result == ["hello", "world"]
 
     def test_stream_cannot_join_to_itself(self):
@@ -84,8 +80,7 @@ class AsyncStreamTests(unittest.TestCase):
                 await stream1.joinTo(stream1)
             return e.exception.args
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert result == ("AsyncStream cannot join to itself",)
 
     def test_filter(self):
@@ -106,8 +101,7 @@ class AsyncStreamTests(unittest.TestCase):
                 await stream1.write(i)
             return subscriber_called_with
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         assert result == [6,7,8,9]
 
     def test_computed(self):
@@ -125,8 +119,7 @@ class AsyncStreamTests(unittest.TestCase):
             await stream2.write(6)
             return stream3.peek()
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(_test())
+        result = asyncio.run(_test())
         # nb the result is only that of the last 'state' (5 + 6)
         assert result == 11
         

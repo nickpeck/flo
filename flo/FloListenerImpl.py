@@ -1,7 +1,7 @@
 import asyncio
 import sys
 
-from antlr4 import *
+from antlr4 import * # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
@@ -14,21 +14,36 @@ class FloListenerImpl(FloListener):
     Execution of statements occurs upon exiting each statement block.
     """
     @staticmethod
-    def loadModule(name):
+    def loadModule(name, main_module=None):
         input_stream = FileStream(name)
         lexer = FloLexer(input_stream)
         stream = CommonTokenStream(lexer)
         parser = FloParser(stream)
         tree = parser.module()
-        listener = FloListenerImpl()
+        listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         return listener
 
-    def __init__(self):
+    @staticmethod
+    def loadString(code, main_module=None):
+        input_stream = InputStream(code)
+        lexer = FloLexer(input_stream)
+        stream = CommonTokenStream(lexer)
+        parser = FloParser(stream)
+        tree = parser.module()
+        listener = FloListenerImpl(main_module)
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        return listener
+
+    def __init__(self, main_module=None):
         super().__init__()
         self.register = []
-        self.module = asyncio.run(setup_default_runtime())
+        if main_module is None:
+            self.module = asyncio.run(setup_default_runtime())
+        else:
+            self.module = main_module
         self.isGetAttrib = False
 
     # Enter a parse tree produced by FloParser#number.
@@ -137,12 +152,12 @@ class FloListenerImpl(FloListener):
         if ctx.children[1].getText() == "output":
             _type = ctx.children[4].getText()
             id = ctx.children[2].getText()
-            stream = AsyncStream[_type]()
+            stream = AsyncStream[_type]() # type: ignore
             self.module.declare_output(id, stream)
         elif ctx.children[1].getText() == "input":
             _type = ctx.children[4].getText()
             id = ctx.children[2].getText()
-            stream = AsyncStream[_type]()
+            stream = AsyncStream[_type]() # type: ignore
             self.module.declare_input(id, stream)
         else:
             _type = ctx.children[3].getText()
@@ -151,7 +166,7 @@ class FloListenerImpl(FloListener):
                 comp_instance = self.module.locals[_type]
                 self.module.declare_local(id, comp_instance)
             else:
-                stream = AsyncStream[_type]()
+                stream = AsyncStream[_type]() # type: ignore
                 self.module.declare_local(id, stream)
 
     # Exit a parse tree produced by FloParser#simpleDeclaration.
@@ -228,14 +243,14 @@ class FloListenerImpl(FloListener):
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '+':
                 computed = asyncio.run(AsyncStream.computed(
-                    lambda a,b: a+b,
+                    lambda a,b: a+b, # type: ignore
                     self.register[-2:]
                 ))
                 self.register = self.register[:-2]
                 self.register.append(computed)
             elif ctx.children[1].getText() == '-':
                 computed = asyncio.run(AsyncStream.computed(
-                    lambda a,b: a-b,
+                    lambda a,b: a-b, # type: ignore
                     self.register[-2:]
                 ))
                 self.register = self.register[:-2]
