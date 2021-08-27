@@ -13,17 +13,22 @@ class ParserTests(unittest.TestCase):
         self.runtime = asyncio.run(self._setup_default_runtime())
 
     async def _setup_default_runtime(self):
+        def _unwrap(i):
+            while isinstance(i, AsyncStream):
+                i = i.peek()
+            return i
+
         active_runtime = AsyncStream[str]
 
         _builtin_stdout = AsyncStream[Any]()
         await _builtin_stdout.subscribe(
             Subscriber[str](
-                on_next = lambda s : self.stdout.append(str(s))))
+                on_next = lambda s : self.stdout.append(_unwrap(str(s)))))
 
         _builtin_stderr = AsyncStream[Any]()
         await _builtin_stderr.subscribe(
             Subscriber[str](
-                on_next = lambda s : self.stdout.append(str(s))))
+                on_next = lambda s : self.stderr.append(_unwrap(str(s)))))
 
         _builtin_runtime = AsyncStream[str]()
         await _builtin_runtime.subscribe(active_runtime)
@@ -43,9 +48,69 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert main_module.module.locals["stdout"].peek() == "hello, world!"
+        assert self.stdout == ["hello, world!"]
 
     def test_simple_addition(self):
+        src = """
+            module main {
+                stdout <- 3 + 4
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['7']
+
+    def test_simple_subtraction(self):
+        src = """
+            module main {
+                stdout <- 3 - 4
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['-1']
+
+    def test_simple_multi(self):
+        src = """
+            module main {
+                stdout <- 3 * 4
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['12']
+
+    def test_simple_division(self):
+        src = """
+            module main {
+                stdout <- 12 / 4
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['3.0']
+
+    def test_logical_and(self):
+        src = """
+            module main {
+                stdout <- false and true
+                stdout <- true and false
+                stdout <- true and true
+                stdout <- false and false
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["False", "False", "True", "False"]
+
+    def test_logical_or(self):
+        src = """
+            module main {
+                stdout <- false or true
+                stdout <- true or false
+                stdout <- true or true
+                stdout <- false or false
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["True", "True", "True", "False"]
+
+    def test_computed_addition_bind_to_output(self):
         src = """
             module main {
                 dec x : int
@@ -57,7 +122,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert main_module.module.locals["stdout"].peek() == 17
+        assert self.stdout == ['17']
 
     def test_components(self):
         src = """
@@ -75,4 +140,4 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert main_module.module.locals["stdout"].peek() == 17
+        assert self.stdout == ['17']

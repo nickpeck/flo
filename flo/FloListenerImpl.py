@@ -231,7 +231,43 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_mult_div.
     def exitCompound_expression_mult_div(self, ctx:FloParser.Compound_expression_mult_divContext):
-        pass
+        if len(ctx.children) >= 3:
+            if ctx.children[1].getText() == '*':
+                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left * right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
+                #print(left, right)
+                computed = asyncio.run(AsyncStream.computed(
+                    lambda a,b: a*b, # type: ignore
+                    [left, right]
+                ))
+                self.register = self.register[:-2]
+                self.register.append(computed)
+            elif ctx.children[1].getText() == '/':
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left / right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
+                computed = asyncio.run(AsyncStream.computed(
+                    lambda a,b: a/b, # type: ignore
+                    [left, right]
+                ))
+                self.register = self.register[:-2]
+                self.register.append(computed)
 
 
     # Enter a parse tree produced by FloParser#compound_expression_plus_minus.
@@ -242,16 +278,38 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_plus_minus(self, ctx:FloParser.Compound_expression_plus_minusContext):
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '+':
+                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left + right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
+                #print(left, right)
                 computed = asyncio.run(AsyncStream.computed(
                     lambda a,b: a+b, # type: ignore
-                    self.register[-2:]
+                    [left, right]
                 ))
                 self.register = self.register[:-2]
                 self.register.append(computed)
             elif ctx.children[1].getText() == '-':
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left - right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
                 computed = asyncio.run(AsyncStream.computed(
                     lambda a,b: a-b, # type: ignore
-                    self.register[-2:]
+                    [left, right]
                 ))
                 self.register = self.register[:-2]
                 self.register.append(computed)
@@ -263,7 +321,26 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_and.
     def exitCompound_expression_and(self, ctx:FloParser.Compound_expression_andContext):
-        pass
+        if len(ctx.children) >= 3:
+            if ctx.children[1].getText() == 'and':
+                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left and right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
+                #print(left, right)
+                computed = asyncio.run(AsyncStream.computed(
+                    lambda a,b: a and b, # type: ignore
+                    [left, right]
+                ))
+                self.register = self.register[:-2]
+                self.register.append(computed)
 
 
     # Enter a parse tree produced by FloParser#compound_expression_or.
@@ -272,7 +349,26 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_or.
     def exitCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
-        pass
+         if len(ctx.children) >= 3:
+            if ctx.children[1].getText() == 'or':
+                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
+                left = self.register[-2]
+                right = self.register[-1]
+                if not isinstance(left, AsyncStream) and not isinstance(right, AsyncStream):
+                    self.register = self.register[:-2]
+                    self.register.append(left or right)
+                    return
+                if not isinstance(left, AsyncStream):
+                    left = AsyncStream(left)
+                if not isinstance(right, AsyncStream):
+                    right = AsyncStream(right)
+                #print(left, right)
+                computed = asyncio.run(AsyncStream.computed(
+                    lambda a,b: a or b, # type: ignore
+                    [left, right]
+                ))
+                self.register = self.register[:-2]
+                self.register.append(computed)
 
     # Enter a parse tree produced by FloParser#compound_expression_putvalue.
     def enterCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
