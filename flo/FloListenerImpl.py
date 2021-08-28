@@ -2,6 +2,7 @@ import asyncio
 import sys
 
 from antlr4 import * # type: ignore
+from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
@@ -22,6 +23,7 @@ class FloListenerImpl(FloListener):
         tree = parser.module()
         listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
+        walker.addErrorListener( MyErrorListener() )
         walker.walk(listener, tree)
         return listener
 

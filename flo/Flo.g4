@@ -118,8 +118,8 @@ compound_expression:
 	)*
 ;
 
-statement: declaration | compound_expression;
+statement: compound_expression;
 
-component: COMPONENT ID LCB (statement)* RCB;
+component: COMPONENT ID LCB (declaration)* (statement)* RCB;
 
-module: MODULE ID LCB (component | statement)* RCB ;
+module: MODULE ID LCB (component | declaration)*  (statement)* RCB ;
