@@ -98,7 +98,8 @@ class AsyncStream(Generic[T]):
         """
         filtered_stream = AsyncStream[T]()
         async def _next(head: T):
-            if expr(head):
+            truthy = expr(head)
+            if truthy:
                 await filtered_stream.write(head)
         subscriber = Subscriber(
             on_next = _next

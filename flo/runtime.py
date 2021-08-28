@@ -50,6 +50,12 @@ class Component(Module):
     def __str__(self):
         return "<Component '{}'>".format(self.name)
 
+class Filter(Module):
+    def __init__(self, name, input_stream: AsyncStream):
+        super().__init__("Anonymous Filter on '{}'".format(name))
+        self.declare_input(name, input_stream)
+
+
 class Runtime(Subscriber[str]):
     def _restart(self):
         pass

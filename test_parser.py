@@ -170,21 +170,21 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['True', 'False', 'True', 'False', 'False']
 
-    # def test_declare_filter(self):
-        # src = """
-            # module main {
-                # dec x : int
-                # dec z : int = x{x >5 }
-                # z->stdout
-                # x <- 0
-                # x <- 10
-                # x <- 5
-                # x <- 6
-            # }
-        # """
-        # main_module = FloListenerImpl.loadString(src, self.runtime)
-        # print("--------------", self.stdout)
-        # assert self.stdout == ['10', '6']
+    def test_declare_filter(self):
+        src = """
+            module main {
+                dec x : int
+                dec z : int = {x: x >= 5}
+                z->stdout
+                x <- 0
+                x <- 5
+                x <- 6
+                x <- 4
+                x <- 10
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['5', '6', '10']
 
     def test_components(self):
         src = """

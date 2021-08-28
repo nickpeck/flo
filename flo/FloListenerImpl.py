@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 import sys
 
 from antlr4 import * # type: ignore
@@ -6,8 +7,8 @@ from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
-from . runtime import setup_default_runtime, Component
-from . stream import AsyncStream
+from . runtime import setup_default_runtime, Component, Filter
+from . stream import AsyncStream, Subscriber
 
 class FloListenerImpl(FloListener):
     """
@@ -211,42 +212,57 @@ class FloListenerImpl(FloListener):
         self.module.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#filterDeclaration.
-    # def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        # pass
+    def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
+        pass
 
-    # # Exit a parse tree produced by FloParser#filterDeclaration.
-    # def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        # if ctx.children[1].getText() == "output":
-            # id = ctx.children[2].getText()
-        # elif ctx.children[1].getText() == "input":
-            # id = ctx.children[2].getText()
-        # else:
-            # id = ctx.children[1].getText()
-        # self.module.declare_local(id, self.register[0])
-        # print("exitFilterDeclaration", self.module.locals)
+    # Exit a parse tree produced by FloParser#filterDeclaration.
+    def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
+        if ctx.children[1].getText() == "output":
+            id = ctx.children[2].getText()
+        elif ctx.children[1].getText() == "input":
+            id = ctx.children[2].getText()
+        else:
+            id = ctx.children[1].getText()
+        self.module.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
-    # def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
-        # pass
+    def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
+        # so given {x : x<5} we declare a hidden module where x is the only local
+        id = ctx.children[1].getText()
+        # TODO better way to do this, using magic methods?
+        try:
+            var = self.module.locals[id]
+        except KeyError:
+            try:
+                var = self.module.inputs[id]
+            except KeyError:
+                var = self.module.outputs[id]
+        m = Filter(id, var)
+        m.parent = self.module
+        self.module = m
+        pass
 
-    # # Exit a parse tree produced by FloParser#compound_expression_filter.
-    # def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext): ###################################
-        # print("exitCompound_expression_filter", self.register)
-        # id = ctx.children[0].getText()
-        # # print(ctx.start)
-        # # print(self.module.locals)
-        # # TODO better way to do this, using magic methods?
-        # right = self.register[-1]
-        # try:
-            # left = self.module.locals[id]
-        # except KeyError:
-            # try:
-                # left = self.module.inputs[id]
-            # except KeyError:
-                # left = self.module.outputs[id]
-        # #self.register[-1] = asyncio.run(left.bindTo(right))
-        # self.register[-1] = asyncio.run(left.filter(right))
-        # print("exitCompound_expression_filter   FINAL", self.register)
+    # Exit a parse tree produced by FloParser#compound_expression_filter.
+    def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
+        id = ctx.children[1].getText()
+        output = AsyncStream[Any]()
+        input = self.module.inputs[id]
+        async def f(truthy):
+            nonlocal output
+            nonlocal input
+            if truthy:
+                await output.write(input.peek())
+        computed_expr = self.register[-1]
+        asyncio.run(computed_expr.subscribe(
+            Subscriber(
+                on_next = f
+            )
+        ))
+        self.module.declare_output("output", output)
+        filter = self.module
+        self.module = self.module.parent
+        #self.module.declare_local(id, filter.outputs["output"])
+        self.register[-1] = filter.outputs["output"]
 
     # Enter a parse tree produced by FloParser#compound_expression_comparison.
     def enterCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
@@ -586,7 +602,6 @@ class FloListenerImpl(FloListener):
         mod_name = ctx.children[1].getText()
         if mod_name == "main":
             return
-        
         # TODO else....
 
     # Exit a parse tree produced by FloParser#module.

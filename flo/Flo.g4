@@ -63,7 +63,7 @@ declaration:
 
 compound_expression_filter
 	:
-		ID LCB compound_expression_comparison RCB
+		LCB ID COLON compound_expression_comparison RCB
 	;
 
 compound_expression_paren
