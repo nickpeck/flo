@@ -16,6 +16,11 @@ MULT	:	'*';
 DIV	:	'/';
 MOD	:	'%';
 EQUALS  :       '=';
+EQUALITY:       '==';
+GTR:       '>';
+LESS:       '<';
+GTREQ:       '>=';
+LESSEQ:       '<=';
 NEGATION :      '!';
 BINDTO :      '->';
 PUTVALUE :    '<-';
@@ -53,7 +58,13 @@ atom: STRING #string
 
 declaration: 
 	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
-	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration;
+	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration
+	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_filter) #filterDeclaration;
+
+compound_expression_filter
+	:
+		ID LCB compound_expression_comparison RCB
+	;
 
 compound_expression_paren
 	:
@@ -65,12 +76,24 @@ compound_expression_not
 	:
 		compound_expression_paren 
 		|
-		NEGATION compound_expression_mult_div 
+		NEGATION compound_expression_comparison 
+	;
+
+compound_expression_comparison
+	:
+		compound_expression_not 
+		(
+			GTR compound_expression_mult_div 
+			| LESS  compound_expression_mult_div
+			| GTREQ compound_expression_mult_div 
+			| LESSEQ compound_expression_mult_div 
+			| EQUALITY compound_expression_mult_div 
+		)*
 	;
 
 compound_expression_mult_div
 	:
-		compound_expression_not
+		compound_expression_comparison
 		(
 			MULT  compound_expression_plus_minus 
 			| DIV  compound_expression_plus_minus

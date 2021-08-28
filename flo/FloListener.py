@@ -71,6 +71,24 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#filterDeclaration.
+    def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#filterDeclaration.
+    def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#compound_expression_filter.
+    def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compound_expression_filter.
+    def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#compound_expression_paren.
     def enterCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
         pass
@@ -86,6 +104,15 @@ class FloListener(ParseTreeListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_not.
     def exitCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#compound_expression_comparison.
+    def enterCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compound_expression_comparison.
+    def exitCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
         pass
 
 

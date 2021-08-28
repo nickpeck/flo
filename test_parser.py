@@ -157,6 +157,35 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['17']
 
+    def test_comparison_operators(self):
+        src = """
+            module main {
+                stdout <- 2 > 1
+                stdout <- 2 < 1
+                stdout <- 2 >= 1
+                stdout <- 2 <= 1
+                stdout <- 2 == 1
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['True', 'False', 'True', 'False', 'False']
+
+    # def test_declare_filter(self):
+        # src = """
+            # module main {
+                # dec x : int
+                # dec z : int = x{x >5 }
+                # z->stdout
+                # x <- 0
+                # x <- 10
+                # x <- 5
+                # x <- 6
+            # }
+        # """
+        # main_module = FloListenerImpl.loadString(src, self.runtime)
+        # print("--------------", self.stdout)
+        # assert self.stdout == ['10', '6']
+
     def test_components(self):
         src = """
             module main {
