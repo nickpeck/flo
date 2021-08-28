@@ -34,22 +34,22 @@ def serializedATN():
         buf.write("\"\2\2\62\64\7\32\2\2\63\65\t\2\2\2\64\63\3\2\2\2\64\65")
         buf.write("\3\2\2\2\65\66\3\2\2\2\66\67\7\"\2\2\678\7\22\2\289\7")
         buf.write("\"\2\29:\7\r\2\2:<\5\24\13\2;+\3\2\2\2;\62\3\2\2\2<\5")
-        buf.write("\3\2\2\2=C\5\2\2\2>?\7\27\2\2?@\5\b\5\2@A\7\30\2\2AC\3")
-        buf.write("\2\2\2B=\3\2\2\2B>\3\2\2\2C\7\3\2\2\2DH\5\6\4\2EF\7\16")
-        buf.write("\2\2FH\5\n\6\2GD\3\2\2\2GE\3\2\2\2H\t\3\2\2\2IR\5\b\5")
-        buf.write("\2JK\7\n\2\2KQ\5\f\7\2LM\7\13\2\2MQ\5\f\7\2NO\7\f\2\2")
-        buf.write("OQ\5\f\7\2PJ\3\2\2\2PL\3\2\2\2PN\3\2\2\2QT\3\2\2\2RP\3")
-        buf.write("\2\2\2RS\3\2\2\2S\13\3\2\2\2TR\3\2\2\2U\\\5\n\6\2VW\7")
-        buf.write("\b\2\2W[\5\16\b\2XY\7\t\2\2Y[\5\16\b\2ZV\3\2\2\2ZX\3\2")
-        buf.write("\2\2[^\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]\r\3\2\2\2^\\\3\2")
-        buf.write("\2\2_d\5\f\7\2`a\7\24\2\2ac\5\20\t\2b`\3\2\2\2cf\3\2\2")
-        buf.write("\2db\3\2\2\2de\3\2\2\2e\17\3\2\2\2fd\3\2\2\2gl\5\16\b")
-        buf.write("\2hi\7\23\2\2ik\5\22\n\2jh\3\2\2\2kn\3\2\2\2lj\3\2\2\2")
-        buf.write("lm\3\2\2\2m\21\3\2\2\2nl\3\2\2\2ot\5\20\t\2pq\7\20\2\2")
-        buf.write("qs\5\24\13\2rp\3\2\2\2sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2u")
-        buf.write("\23\3\2\2\2vt\3\2\2\2w|\5\22\n\2xy\7\17\2\2y{\5\22\n\2")
-        buf.write("zx\3\2\2\2{~\3\2\2\2|z\3\2\2\2|}\3\2\2\2}\25\3\2\2\2~")
-        buf.write("|\3\2\2\2\177\u0082\5\4\3\2\u0080\u0082\5\24\13\2\u0081")
+        buf.write("\3\2\2\2=C\5\2\2\2>?\7\27\2\2?@\5\24\13\2@A\7\30\2\2A")
+        buf.write("C\3\2\2\2B=\3\2\2\2B>\3\2\2\2C\7\3\2\2\2DH\5\6\4\2EF\7")
+        buf.write("\16\2\2FH\5\n\6\2GD\3\2\2\2GE\3\2\2\2H\t\3\2\2\2IR\5\b")
+        buf.write("\5\2JK\7\n\2\2KQ\5\f\7\2LM\7\13\2\2MQ\5\f\7\2NO\7\f\2")
+        buf.write("\2OQ\5\f\7\2PJ\3\2\2\2PL\3\2\2\2PN\3\2\2\2QT\3\2\2\2R")
+        buf.write("P\3\2\2\2RS\3\2\2\2S\13\3\2\2\2TR\3\2\2\2U\\\5\n\6\2V")
+        buf.write("W\7\b\2\2W[\5\16\b\2XY\7\t\2\2Y[\5\16\b\2ZV\3\2\2\2ZX")
+        buf.write("\3\2\2\2[^\3\2\2\2\\Z\3\2\2\2\\]\3\2\2\2]\r\3\2\2\2^\\")
+        buf.write("\3\2\2\2_d\5\f\7\2`a\7\24\2\2ac\5\20\t\2b`\3\2\2\2cf\3")
+        buf.write("\2\2\2db\3\2\2\2de\3\2\2\2e\17\3\2\2\2fd\3\2\2\2gl\5\16")
+        buf.write("\b\2hi\7\23\2\2ik\5\22\n\2jh\3\2\2\2kn\3\2\2\2lj\3\2\2")
+        buf.write("\2lm\3\2\2\2m\21\3\2\2\2nl\3\2\2\2ot\5\20\t\2pq\7\20\2")
+        buf.write("\2qs\5\24\13\2rp\3\2\2\2sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2")
+        buf.write("u\23\3\2\2\2vt\3\2\2\2w|\5\22\n\2xy\7\17\2\2y{\5\22\n")
+        buf.write("\2zx\3\2\2\2{~\3\2\2\2|z\3\2\2\2|}\3\2\2\2}\25\3\2\2\2")
+        buf.write("~|\3\2\2\2\177\u0082\5\4\3\2\u0080\u0082\5\24\13\2\u0081")
         buf.write("\177\3\2\2\2\u0081\u0080\3\2\2\2\u0082\27\3\2\2\2\u0083")
         buf.write("\u0084\7\34\2\2\u0084\u0085\7\"\2\2\u0085\u0089\7\25\2")
         buf.write("\2\u0086\u0088\5\26\f\2\u0087\u0086\3\2\2\2\u0088\u008b")
@@ -506,8 +506,8 @@ class FloParser ( Parser ):
         def LPAREN(self):
             return self.getToken(FloParser.LPAREN, 0)
 
-        def compound_expression_not(self):
-            return self.getTypedRuleContext(FloParser.Compound_expression_notContext,0)
+        def compound_expression(self):
+            return self.getTypedRuleContext(FloParser.Compound_expressionContext,0)
 
 
         def RPAREN(self):
@@ -545,7 +545,7 @@ class FloParser ( Parser ):
                 self.state = 60
                 self.match(FloParser.LPAREN)
                 self.state = 61
-                self.compound_expression_not()
+                self.compound_expression()
                 self.state = 62
                 self.match(FloParser.RPAREN)
                 pass

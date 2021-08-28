@@ -58,9 +58,8 @@ declaration:
 compound_expression_paren
 	:
 		atom
-		| LPAREN compound_expression_not RPAREN
+		| LPAREN compound_expression RPAREN
 	;
-	
 
 compound_expression_not
 	:
