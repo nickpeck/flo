@@ -1,9 +1,5 @@
 grammar Flo;
 
-options {
-    language = Java;
-}
-
 CR : '\n';
 COMMENT
     : '/*' .*? '*/' -> channel(HIDDEN);
@@ -12,7 +8,6 @@ LINE_COMMENT
 WHITESPACE : ( '\t' | ' ' | '\r' | CR| '\u000C' )+ -> channel(HIDDEN);
 //all numbers are represented by a single 'num' type in the grammar:
 NUMBER:[0-9]+;
-
 
 //operators;
 PLUS	:	'+';
@@ -28,7 +23,6 @@ DOT :      '.';
 COLON: ':';
 OR: 'or';
 AND: 'and';
-
 
 //punctuation
 LCB     :       '{';
@@ -58,8 +52,8 @@ atom: STRING #string
 	| atom DOT atom #getAttrib;
 
 declaration: 
-    (DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
-    | (DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration;
+	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
+	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration;
 
 compound_expression_paren
 	:
@@ -109,6 +103,7 @@ compound_expression_or
 			OR compound_expression_putvalue
 		)*	
 	;
+
 compound_expression_putvalue
 	:
 		compound_expression_or
@@ -116,7 +111,7 @@ compound_expression_putvalue
 			PUTVALUE compound_expression
 		)*	
 	;
-	
+
 compound_expression: 
 	compound_expression_putvalue 
 	(

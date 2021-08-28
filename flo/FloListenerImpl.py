@@ -222,7 +222,22 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_not.
     def exitCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
-        pass
+        if len(ctx.children) >= 2:
+            if ctx.children[0].getText() == '!':
+                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
+                right = self.register[-1]
+                if not isinstance(right, AsyncStream):
+                    self.register = self.register[:-1]
+                    self.register.append(not right)
+                    return
+
+                #print(left, right)
+                computed = asyncio.run(AsyncStream.computed(
+                    lambda b: not b, # type: ignore
+                    [right]
+                ))
+                self.register = self.register[:-1]
+                self.register.append(computed)
 
 
     # Enter a parse tree produced by FloParser#compound_expression_mult_div.

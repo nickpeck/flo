@@ -50,6 +50,15 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["hello, world!"]
 
+    def test_single_line_comment(self):
+        src = """
+            module main {
+                // stdout <- "hello, world!"
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == []
+
     def test_simple_addition(self):
         src = """
             module main {
@@ -109,6 +118,30 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["True", "True", "True", "False"]
+
+    def test_not(self):
+        src = """
+            module main {
+                stdout <- ! true
+                stdout <- ! false
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["False", "True"]
+
+    # def test_precedence_of_ops(self):
+        # # nb https://www.tutorialspoint.com/python/operators_precedence_example.htm
+        # src = """
+            # module main {
+                # stdout <- (20 + 10) * 15 / 5
+                # // stdout <- ((20 + 10) * 15) / 5
+                # // stdout <- (20 + 10) * (15 / 5)
+                # // stdout <- 15 + (10 * 15) / 5
+            # }
+        # """
+        # main_module = FloListenerImpl.loadString(src, self.runtime)
+        # print(self.stdout)
+        # assert self.stdout == ["90", "90", "90", "50"]
 
     def test_computed_addition_bind_to_output(self):
         src = """
