@@ -54,7 +54,7 @@ atom: STRING #string
 	| NUMBER #number
 	| BOOL #bool
 	| ID #id
-	| atom DOT atom #getAttrib;
+	| atom (DOT atom)+ #getAttrib;
 
 declaration: 
 	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
@@ -145,4 +145,4 @@ statement: compound_expression;
 
 component: COMPONENT ID LCB (declaration)* (statement)* RCB;
 
-module: MODULE ID LCB (component | declaration)*  (statement)* RCB ;
+module: MODULE ID LCB (module | component | declaration)*  (statement)* RCB ;

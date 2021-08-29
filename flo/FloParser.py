@@ -8,84 +8,88 @@ import sys
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3(")
-        buf.write("\u00c8\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\u00cd\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\3\2\3\2\3\2\3\2\3\2\5\2&\n\2")
-        buf.write("\3\2\3\2\3\2\7\2+\n\2\f\2\16\2.\13\2\3\3\3\3\5\3\62\n")
-        buf.write("\3\3\3\3\3\3\3\3\3\3\3\5\39\n\3\3\3\3\3\3\3\3\3\3\3\3")
-        buf.write("\3\3\3\5\3B\n\3\3\3\3\3\3\3\3\3\3\3\5\3I\n\3\3\4\3\4\3")
-        buf.write("\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\5\5V\n\5\3\6\3\6\3")
-        buf.write("\6\5\6[\n\6\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3")
-        buf.write("\7\7\7h\n\7\f\7\16\7k\13\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b")
-        buf.write("\7\bt\n\b\f\b\16\bw\13\b\3\t\3\t\3\t\3\t\3\t\7\t~\n\t")
-        buf.write("\f\t\16\t\u0081\13\t\3\n\3\n\3\n\7\n\u0086\n\n\f\n\16")
-        buf.write("\n\u0089\13\n\3\13\3\13\3\13\7\13\u008e\n\13\f\13\16\13")
-        buf.write("\u0091\13\13\3\f\3\f\3\f\7\f\u0096\n\f\f\f\16\f\u0099")
-        buf.write("\13\f\3\r\3\r\3\r\7\r\u009e\n\r\f\r\16\r\u00a1\13\r\3")
-        buf.write("\16\3\16\3\17\3\17\3\17\3\17\7\17\u00a9\n\17\f\17\16\17")
-        buf.write("\u00ac\13\17\3\17\7\17\u00af\n\17\f\17\16\17\u00b2\13")
-        buf.write("\17\3\17\3\17\3\20\3\20\3\20\3\20\3\20\7\20\u00bb\n\20")
-        buf.write("\f\20\16\20\u00be\13\20\3\20\7\20\u00c1\n\20\f\20\16\20")
-        buf.write("\u00c4\13\20\3\20\3\20\3\20\2\3\2\21\2\4\6\b\n\f\16\20")
-        buf.write("\22\24\26\30\32\34\36\2\3\3\2#$\2\u00d6\2%\3\2\2\2\4H")
-        buf.write("\3\2\2\2\6J\3\2\2\2\bU\3\2\2\2\nZ\3\2\2\2\f\\\3\2\2\2")
-        buf.write("\16l\3\2\2\2\20x\3\2\2\2\22\u0082\3\2\2\2\24\u008a\3\2")
-        buf.write("\2\2\26\u0092\3\2\2\2\30\u009a\3\2\2\2\32\u00a2\3\2\2")
-        buf.write("\2\34\u00a4\3\2\2\2\36\u00b5\3\2\2\2 !\b\2\1\2!&\7%\2")
-        buf.write("\2\"&\7\7\2\2#&\7&\2\2$&\7\'\2\2% \3\2\2\2%\"\3\2\2\2")
-        buf.write("%#\3\2\2\2%$\3\2\2\2&,\3\2\2\2\'(\f\3\2\2()\7\26\2\2)")
-        buf.write("+\5\2\2\4*\'\3\2\2\2+.\3\2\2\2,*\3\2\2\2,-\3\2\2\2-\3")
-        buf.write("\3\2\2\2.,\3\2\2\2/\61\7\37\2\2\60\62\t\2\2\2\61\60\3")
-        buf.write("\2\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63\64\7\'\2\2\64\65")
-        buf.write("\7\27\2\2\65I\7\'\2\2\668\7\37\2\2\679\t\2\2\28\67\3\2")
-        buf.write("\2\289\3\2\2\29:\3\2\2\2:;\7\'\2\2;<\7\27\2\2<=\7\'\2")
-        buf.write("\2=>\7\r\2\2>I\5\30\r\2?A\7\37\2\2@B\t\2\2\2A@\3\2\2\2")
-        buf.write("AB\3\2\2\2BC\3\2\2\2CD\7\'\2\2DE\7\27\2\2EF\7\'\2\2FG")
-        buf.write("\7\r\2\2GI\5\6\4\2H/\3\2\2\2H\66\3\2\2\2H?\3\2\2\2I\5")
-        buf.write("\3\2\2\2JK\7\32\2\2KL\7\'\2\2LM\7\27\2\2MN\5\f\7\2NO\7")
-        buf.write("\33\2\2O\7\3\2\2\2PV\5\2\2\2QR\7\34\2\2RS\5\30\r\2ST\7")
-        buf.write("\35\2\2TV\3\2\2\2UP\3\2\2\2UQ\3\2\2\2V\t\3\2\2\2W[\5\b")
-        buf.write("\5\2XY\7\23\2\2Y[\5\f\7\2ZW\3\2\2\2ZX\3\2\2\2[\13\3\2")
-        buf.write("\2\2\\i\5\n\6\2]^\7\17\2\2^h\5\16\b\2_`\7\20\2\2`h\5\16")
-        buf.write("\b\2ab\7\21\2\2bh\5\16\b\2cd\7\22\2\2dh\5\16\b\2ef\7\16")
-        buf.write("\2\2fh\5\16\b\2g]\3\2\2\2g_\3\2\2\2ga\3\2\2\2gc\3\2\2")
-        buf.write("\2ge\3\2\2\2hk\3\2\2\2ig\3\2\2\2ij\3\2\2\2j\r\3\2\2\2")
-        buf.write("ki\3\2\2\2lu\5\f\7\2mn\7\n\2\2nt\5\20\t\2op\7\13\2\2p")
-        buf.write("t\5\20\t\2qr\7\f\2\2rt\5\20\t\2sm\3\2\2\2so\3\2\2\2sq")
-        buf.write("\3\2\2\2tw\3\2\2\2us\3\2\2\2uv\3\2\2\2v\17\3\2\2\2wu\3")
-        buf.write("\2\2\2x\177\5\16\b\2yz\7\b\2\2z~\5\22\n\2{|\7\t\2\2|~")
-        buf.write("\5\22\n\2}y\3\2\2\2}{\3\2\2\2~\u0081\3\2\2\2\177}\3\2")
-        buf.write("\2\2\177\u0080\3\2\2\2\u0080\21\3\2\2\2\u0081\177\3\2")
-        buf.write("\2\2\u0082\u0087\5\20\t\2\u0083\u0084\7\31\2\2\u0084\u0086")
-        buf.write("\5\24\13\2\u0085\u0083\3\2\2\2\u0086\u0089\3\2\2\2\u0087")
-        buf.write("\u0085\3\2\2\2\u0087\u0088\3\2\2\2\u0088\23\3\2\2\2\u0089")
-        buf.write("\u0087\3\2\2\2\u008a\u008f\5\22\n\2\u008b\u008c\7\30\2")
-        buf.write("\2\u008c\u008e\5\26\f\2\u008d\u008b\3\2\2\2\u008e\u0091")
-        buf.write("\3\2\2\2\u008f\u008d\3\2\2\2\u008f\u0090\3\2\2\2\u0090")
-        buf.write("\25\3\2\2\2\u0091\u008f\3\2\2\2\u0092\u0097\5\24\13\2")
-        buf.write("\u0093\u0094\7\25\2\2\u0094\u0096\5\30\r\2\u0095\u0093")
-        buf.write("\3\2\2\2\u0096\u0099\3\2\2\2\u0097\u0095\3\2\2\2\u0097")
-        buf.write("\u0098\3\2\2\2\u0098\27\3\2\2\2\u0099\u0097\3\2\2\2\u009a")
-        buf.write("\u009f\5\26\f\2\u009b\u009c\7\24\2\2\u009c\u009e\5\26")
-        buf.write("\f\2\u009d\u009b\3\2\2\2\u009e\u00a1\3\2\2\2\u009f\u009d")
-        buf.write("\3\2\2\2\u009f\u00a0\3\2\2\2\u00a0\31\3\2\2\2\u00a1\u009f")
-        buf.write("\3\2\2\2\u00a2\u00a3\5\30\r\2\u00a3\33\3\2\2\2\u00a4\u00a5")
-        buf.write("\7!\2\2\u00a5\u00a6\7\'\2\2\u00a6\u00aa\7\32\2\2\u00a7")
-        buf.write("\u00a9\5\4\3\2\u00a8\u00a7\3\2\2\2\u00a9\u00ac\3\2\2\2")
-        buf.write("\u00aa\u00a8\3\2\2\2\u00aa\u00ab\3\2\2\2\u00ab\u00b0\3")
-        buf.write("\2\2\2\u00ac\u00aa\3\2\2\2\u00ad\u00af\5\32\16\2\u00ae")
-        buf.write("\u00ad\3\2\2\2\u00af\u00b2\3\2\2\2\u00b0\u00ae\3\2\2\2")
-        buf.write("\u00b0\u00b1\3\2\2\2\u00b1\u00b3\3\2\2\2\u00b2\u00b0\3")
-        buf.write("\2\2\2\u00b3\u00b4\7\33\2\2\u00b4\35\3\2\2\2\u00b5\u00b6")
-        buf.write("\7 \2\2\u00b6\u00b7\7\'\2\2\u00b7\u00bc\7\32\2\2\u00b8")
-        buf.write("\u00bb\5\34\17\2\u00b9\u00bb\5\4\3\2\u00ba\u00b8\3\2\2")
-        buf.write("\2\u00ba\u00b9\3\2\2\2\u00bb\u00be\3\2\2\2\u00bc\u00ba")
-        buf.write("\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd\u00c2\3\2\2\2\u00be")
-        buf.write("\u00bc\3\2\2\2\u00bf\u00c1\5\32\16\2\u00c0\u00bf\3\2\2")
-        buf.write("\2\u00c1\u00c4\3\2\2\2\u00c2\u00c0\3\2\2\2\u00c2\u00c3")
-        buf.write("\3\2\2\2\u00c3\u00c5\3\2\2\2\u00c4\u00c2\3\2\2\2\u00c5")
-        buf.write("\u00c6\7\33\2\2\u00c6\37\3\2\2\2\31%,\618AHUZgisu}\177")
-        buf.write("\u0087\u008f\u0097\u009f\u00aa\u00b0\u00ba\u00bc\u00c2")
+        buf.write("\3\2\3\2\3\2\6\2+\n\2\r\2\16\2,\7\2/\n\2\f\2\16\2\62\13")
+        buf.write("\2\3\3\3\3\5\3\66\n\3\3\3\3\3\3\3\3\3\3\3\5\3=\n\3\3\3")
+        buf.write("\3\3\3\3\3\3\3\3\3\3\3\3\5\3F\n\3\3\3\3\3\3\3\3\3\3\3")
+        buf.write("\5\3M\n\3\3\4\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5")
+        buf.write("\5\5Z\n\5\3\6\3\6\3\6\5\6_\n\6\3\7\3\7\3\7\3\7\3\7\3\7")
+        buf.write("\3\7\3\7\3\7\3\7\3\7\7\7l\n\7\f\7\16\7o\13\7\3\b\3\b\3")
+        buf.write("\b\3\b\3\b\3\b\3\b\7\bx\n\b\f\b\16\b{\13\b\3\t\3\t\3\t")
+        buf.write("\3\t\3\t\7\t\u0082\n\t\f\t\16\t\u0085\13\t\3\n\3\n\3\n")
+        buf.write("\7\n\u008a\n\n\f\n\16\n\u008d\13\n\3\13\3\13\3\13\7\13")
+        buf.write("\u0092\n\13\f\13\16\13\u0095\13\13\3\f\3\f\3\f\7\f\u009a")
+        buf.write("\n\f\f\f\16\f\u009d\13\f\3\r\3\r\3\r\7\r\u00a2\n\r\f\r")
+        buf.write("\16\r\u00a5\13\r\3\16\3\16\3\17\3\17\3\17\3\17\7\17\u00ad")
+        buf.write("\n\17\f\17\16\17\u00b0\13\17\3\17\7\17\u00b3\n\17\f\17")
+        buf.write("\16\17\u00b6\13\17\3\17\3\17\3\20\3\20\3\20\3\20\3\20")
+        buf.write("\3\20\7\20\u00c0\n\20\f\20\16\20\u00c3\13\20\3\20\7\20")
+        buf.write("\u00c6\n\20\f\20\16\20\u00c9\13\20\3\20\3\20\3\20\2\3")
+        buf.write("\2\21\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36\2\3\3\2#")
+        buf.write("$\2\u00dd\2%\3\2\2\2\4L\3\2\2\2\6N\3\2\2\2\bY\3\2\2\2")
+        buf.write("\n^\3\2\2\2\f`\3\2\2\2\16p\3\2\2\2\20|\3\2\2\2\22\u0086")
+        buf.write("\3\2\2\2\24\u008e\3\2\2\2\26\u0096\3\2\2\2\30\u009e\3")
+        buf.write("\2\2\2\32\u00a6\3\2\2\2\34\u00a8\3\2\2\2\36\u00b9\3\2")
+        buf.write("\2\2 !\b\2\1\2!&\7%\2\2\"&\7\7\2\2#&\7&\2\2$&\7\'\2\2")
+        buf.write("% \3\2\2\2%\"\3\2\2\2%#\3\2\2\2%$\3\2\2\2&\60\3\2\2\2")
+        buf.write("\'*\f\3\2\2()\7\26\2\2)+\5\2\2\2*(\3\2\2\2+,\3\2\2\2,")
+        buf.write("*\3\2\2\2,-\3\2\2\2-/\3\2\2\2.\'\3\2\2\2/\62\3\2\2\2\60")
+        buf.write(".\3\2\2\2\60\61\3\2\2\2\61\3\3\2\2\2\62\60\3\2\2\2\63")
+        buf.write("\65\7\37\2\2\64\66\t\2\2\2\65\64\3\2\2\2\65\66\3\2\2\2")
+        buf.write("\66\67\3\2\2\2\678\7\'\2\289\7\27\2\29M\7\'\2\2:<\7\37")
+        buf.write("\2\2;=\t\2\2\2<;\3\2\2\2<=\3\2\2\2=>\3\2\2\2>?\7\'\2\2")
+        buf.write("?@\7\27\2\2@A\7\'\2\2AB\7\r\2\2BM\5\30\r\2CE\7\37\2\2")
+        buf.write("DF\t\2\2\2ED\3\2\2\2EF\3\2\2\2FG\3\2\2\2GH\7\'\2\2HI\7")
+        buf.write("\27\2\2IJ\7\'\2\2JK\7\r\2\2KM\5\6\4\2L\63\3\2\2\2L:\3")
+        buf.write("\2\2\2LC\3\2\2\2M\5\3\2\2\2NO\7\32\2\2OP\7\'\2\2PQ\7\27")
+        buf.write("\2\2QR\5\f\7\2RS\7\33\2\2S\7\3\2\2\2TZ\5\2\2\2UV\7\34")
+        buf.write("\2\2VW\5\30\r\2WX\7\35\2\2XZ\3\2\2\2YT\3\2\2\2YU\3\2\2")
+        buf.write("\2Z\t\3\2\2\2[_\5\b\5\2\\]\7\23\2\2]_\5\f\7\2^[\3\2\2")
+        buf.write("\2^\\\3\2\2\2_\13\3\2\2\2`m\5\n\6\2ab\7\17\2\2bl\5\16")
+        buf.write("\b\2cd\7\20\2\2dl\5\16\b\2ef\7\21\2\2fl\5\16\b\2gh\7\22")
+        buf.write("\2\2hl\5\16\b\2ij\7\16\2\2jl\5\16\b\2ka\3\2\2\2kc\3\2")
+        buf.write("\2\2ke\3\2\2\2kg\3\2\2\2ki\3\2\2\2lo\3\2\2\2mk\3\2\2\2")
+        buf.write("mn\3\2\2\2n\r\3\2\2\2om\3\2\2\2py\5\f\7\2qr\7\n\2\2rx")
+        buf.write("\5\20\t\2st\7\13\2\2tx\5\20\t\2uv\7\f\2\2vx\5\20\t\2w")
+        buf.write("q\3\2\2\2ws\3\2\2\2wu\3\2\2\2x{\3\2\2\2yw\3\2\2\2yz\3")
+        buf.write("\2\2\2z\17\3\2\2\2{y\3\2\2\2|\u0083\5\16\b\2}~\7\b\2\2")
+        buf.write("~\u0082\5\22\n\2\177\u0080\7\t\2\2\u0080\u0082\5\22\n")
+        buf.write("\2\u0081}\3\2\2\2\u0081\177\3\2\2\2\u0082\u0085\3\2\2")
+        buf.write("\2\u0083\u0081\3\2\2\2\u0083\u0084\3\2\2\2\u0084\21\3")
+        buf.write("\2\2\2\u0085\u0083\3\2\2\2\u0086\u008b\5\20\t\2\u0087")
+        buf.write("\u0088\7\31\2\2\u0088\u008a\5\24\13\2\u0089\u0087\3\2")
+        buf.write("\2\2\u008a\u008d\3\2\2\2\u008b\u0089\3\2\2\2\u008b\u008c")
+        buf.write("\3\2\2\2\u008c\23\3\2\2\2\u008d\u008b\3\2\2\2\u008e\u0093")
+        buf.write("\5\22\n\2\u008f\u0090\7\30\2\2\u0090\u0092\5\26\f\2\u0091")
+        buf.write("\u008f\3\2\2\2\u0092\u0095\3\2\2\2\u0093\u0091\3\2\2\2")
+        buf.write("\u0093\u0094\3\2\2\2\u0094\25\3\2\2\2\u0095\u0093\3\2")
+        buf.write("\2\2\u0096\u009b\5\24\13\2\u0097\u0098\7\25\2\2\u0098")
+        buf.write("\u009a\5\30\r\2\u0099\u0097\3\2\2\2\u009a\u009d\3\2\2")
+        buf.write("\2\u009b\u0099\3\2\2\2\u009b\u009c\3\2\2\2\u009c\27\3")
+        buf.write("\2\2\2\u009d\u009b\3\2\2\2\u009e\u00a3\5\26\f\2\u009f")
+        buf.write("\u00a0\7\24\2\2\u00a0\u00a2\5\26\f\2\u00a1\u009f\3\2\2")
+        buf.write("\2\u00a2\u00a5\3\2\2\2\u00a3\u00a1\3\2\2\2\u00a3\u00a4")
+        buf.write("\3\2\2\2\u00a4\31\3\2\2\2\u00a5\u00a3\3\2\2\2\u00a6\u00a7")
+        buf.write("\5\30\r\2\u00a7\33\3\2\2\2\u00a8\u00a9\7!\2\2\u00a9\u00aa")
+        buf.write("\7\'\2\2\u00aa\u00ae\7\32\2\2\u00ab\u00ad\5\4\3\2\u00ac")
+        buf.write("\u00ab\3\2\2\2\u00ad\u00b0\3\2\2\2\u00ae\u00ac\3\2\2\2")
+        buf.write("\u00ae\u00af\3\2\2\2\u00af\u00b4\3\2\2\2\u00b0\u00ae\3")
+        buf.write("\2\2\2\u00b1\u00b3\5\32\16\2\u00b2\u00b1\3\2\2\2\u00b3")
+        buf.write("\u00b6\3\2\2\2\u00b4\u00b2\3\2\2\2\u00b4\u00b5\3\2\2\2")
+        buf.write("\u00b5\u00b7\3\2\2\2\u00b6\u00b4\3\2\2\2\u00b7\u00b8\7")
+        buf.write("\33\2\2\u00b8\35\3\2\2\2\u00b9\u00ba\7 \2\2\u00ba\u00bb")
+        buf.write("\7\'\2\2\u00bb\u00c1\7\32\2\2\u00bc\u00c0\5\36\20\2\u00bd")
+        buf.write("\u00c0\5\34\17\2\u00be\u00c0\5\4\3\2\u00bf\u00bc\3\2\2")
+        buf.write("\2\u00bf\u00bd\3\2\2\2\u00bf\u00be\3\2\2\2\u00c0\u00c3")
+        buf.write("\3\2\2\2\u00c1\u00bf\3\2\2\2\u00c1\u00c2\3\2\2\2\u00c2")
+        buf.write("\u00c7\3\2\2\2\u00c3\u00c1\3\2\2\2\u00c4\u00c6\5\32\16")
+        buf.write("\2\u00c5\u00c4\3\2\2\2\u00c6\u00c9\3\2\2\2\u00c7\u00c5")
+        buf.write("\3\2\2\2\u00c7\u00c8\3\2\2\2\u00c8\u00ca\3\2\2\2\u00c9")
+        buf.write("\u00c7\3\2\2\2\u00ca\u00cb\7\33\2\2\u00cb\37\3\2\2\2\32")
+        buf.write("%,\60\65<ELY^kmwy\u0081\u0083\u008b\u0093\u009b\u00a3")
+        buf.write("\u00ae\u00b4\u00bf\u00c1\u00c7")
         return buf.getvalue()
 
 
@@ -267,8 +271,11 @@ class FloParser ( Parser ):
             else:
                 return self.getTypedRuleContext(FloParser.AtomContext,i)
 
-        def DOT(self):
-            return self.getToken(FloParser.DOT, 0)
+        def DOT(self, i:int=None):
+            if i is None:
+                return self.getTokens(FloParser.DOT)
+            else:
+                return self.getToken(FloParser.DOT, i)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGetAttrib" ):
@@ -343,9 +350,9 @@ class FloParser ( Parser ):
                 raise NoViableAltException(self)
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 42
+            self.state = 46
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     if self._parseListeners is not None:
@@ -357,13 +364,25 @@ class FloParser ( Parser ):
                     if not self.precpred(self._ctx, 1):
                         from antlr4.error.Errors import FailedPredicateException
                         raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
-                    self.state = 38
-                    self.match(FloParser.DOT)
-                    self.state = 39
-                    self.atom(2) 
-                self.state = 44
+                    self.state = 40 
+                    self._errHandler.sync(self)
+                    _alt = 1
+                    while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                        if _alt == 1:
+                            self.state = 38
+                            self.match(FloParser.DOT)
+                            self.state = 39
+                            self.atom(0)
+
+                        else:
+                            raise NoViableAltException(self)
+                        self.state = 42 
+                        self._errHandler.sync(self)
+                        _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
+             
+                self.state = 48
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -493,19 +512,19 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 2, self.RULE_declaration)
         self._la = 0 # Token type
         try:
-            self.state = 70
+            self.state = 74
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,5,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
             if la_ == 1:
                 localctx = FloParser.SimpleDeclarationContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 45
+                self.state = 49
                 self.match(FloParser.DEC)
-                self.state = 47
+                self.state = 51
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==FloParser.INPUT or _la==FloParser.OUTPUT:
-                    self.state = 46
+                    self.state = 50
                     _la = self._input.LA(1)
                     if not(_la==FloParser.INPUT or _la==FloParser.OUTPUT):
                         self._errHandler.recoverInline(self)
@@ -514,24 +533,24 @@ class FloParser ( Parser ):
                         self.consume()
 
 
-                self.state = 49
+                self.state = 53
                 self.match(FloParser.ID)
-                self.state = 50
+                self.state = 54
                 self.match(FloParser.COLON)
-                self.state = 51
+                self.state = 55
                 self.match(FloParser.ID)
                 pass
 
             elif la_ == 2:
                 localctx = FloParser.ComputedDeclarationContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 52
+                self.state = 56
                 self.match(FloParser.DEC)
-                self.state = 54
+                self.state = 58
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==FloParser.INPUT or _la==FloParser.OUTPUT:
-                    self.state = 53
+                    self.state = 57
                     _la = self._input.LA(1)
                     if not(_la==FloParser.INPUT or _la==FloParser.OUTPUT):
                         self._errHandler.recoverInline(self)
@@ -540,28 +559,28 @@ class FloParser ( Parser ):
                         self.consume()
 
 
-                self.state = 56
-                self.match(FloParser.ID)
-                self.state = 57
-                self.match(FloParser.COLON)
-                self.state = 58
-                self.match(FloParser.ID)
-                self.state = 59
-                self.match(FloParser.EQUALS)
                 self.state = 60
+                self.match(FloParser.ID)
+                self.state = 61
+                self.match(FloParser.COLON)
+                self.state = 62
+                self.match(FloParser.ID)
+                self.state = 63
+                self.match(FloParser.EQUALS)
+                self.state = 64
                 self.compound_expression()
                 pass
 
             elif la_ == 3:
                 localctx = FloParser.FilterDeclarationContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 61
+                self.state = 65
                 self.match(FloParser.DEC)
-                self.state = 63
+                self.state = 67
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==FloParser.INPUT or _la==FloParser.OUTPUT:
-                    self.state = 62
+                    self.state = 66
                     _la = self._input.LA(1)
                     if not(_la==FloParser.INPUT or _la==FloParser.OUTPUT):
                         self._errHandler.recoverInline(self)
@@ -570,15 +589,15 @@ class FloParser ( Parser ):
                         self.consume()
 
 
-                self.state = 65
-                self.match(FloParser.ID)
-                self.state = 66
-                self.match(FloParser.COLON)
-                self.state = 67
-                self.match(FloParser.ID)
-                self.state = 68
-                self.match(FloParser.EQUALS)
                 self.state = 69
+                self.match(FloParser.ID)
+                self.state = 70
+                self.match(FloParser.COLON)
+                self.state = 71
+                self.match(FloParser.ID)
+                self.state = 72
+                self.match(FloParser.EQUALS)
+                self.state = 73
                 self.compound_expression_filter()
                 pass
 
@@ -633,15 +652,15 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 4, self.RULE_compound_expression_filter)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 72
-            self.match(FloParser.LCB)
-            self.state = 73
-            self.match(FloParser.ID)
-            self.state = 74
-            self.match(FloParser.COLON)
-            self.state = 75
-            self.compound_expression_comparison()
             self.state = 76
+            self.match(FloParser.LCB)
+            self.state = 77
+            self.match(FloParser.ID)
+            self.state = 78
+            self.match(FloParser.COLON)
+            self.state = 79
+            self.compound_expression_comparison()
+            self.state = 80
             self.match(FloParser.RCB)
         except RecognitionException as re:
             localctx.exception = re
@@ -690,21 +709,21 @@ class FloParser ( Parser ):
         localctx = FloParser.Compound_expression_parenContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_compound_expression_paren)
         try:
-            self.state = 83
+            self.state = 87
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [FloParser.NUMBER, FloParser.STRING, FloParser.BOOL, FloParser.ID]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 78
+                self.state = 82
                 self.atom(0)
                 pass
             elif token in [FloParser.LPAREN]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 79
+                self.state = 83
                 self.match(FloParser.LPAREN)
-                self.state = 80
+                self.state = 84
                 self.compound_expression()
-                self.state = 81
+                self.state = 85
                 self.match(FloParser.RPAREN)
                 pass
             else:
@@ -754,19 +773,19 @@ class FloParser ( Parser ):
         localctx = FloParser.Compound_expression_notContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_compound_expression_not)
         try:
-            self.state = 88
+            self.state = 92
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [FloParser.NUMBER, FloParser.LPAREN, FloParser.STRING, FloParser.BOOL, FloParser.ID]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 85
+                self.state = 89
                 self.compound_expression_paren()
                 pass
             elif token in [FloParser.NEGATION]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 86
+                self.state = 90
                 self.match(FloParser.NEGATION)
-                self.state = 87
+                self.state = 91
                 self.compound_expression_comparison()
                 pass
             else:
@@ -847,52 +866,52 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_compound_expression_comparison)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 90
+            self.state = 94
             self.compound_expression_not()
-            self.state = 103
+            self.state = 107
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,10,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 101
+                    self.state = 105
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [FloParser.GTR]:
-                        self.state = 91
-                        self.match(FloParser.GTR)
-                        self.state = 92
-                        self.compound_expression_mult_div()
-                        pass
-                    elif token in [FloParser.LESS]:
-                        self.state = 93
-                        self.match(FloParser.LESS)
-                        self.state = 94
-                        self.compound_expression_mult_div()
-                        pass
-                    elif token in [FloParser.GTREQ]:
                         self.state = 95
-                        self.match(FloParser.GTREQ)
+                        self.match(FloParser.GTR)
                         self.state = 96
                         self.compound_expression_mult_div()
                         pass
-                    elif token in [FloParser.LESSEQ]:
+                    elif token in [FloParser.LESS]:
                         self.state = 97
-                        self.match(FloParser.LESSEQ)
+                        self.match(FloParser.LESS)
                         self.state = 98
                         self.compound_expression_mult_div()
                         pass
-                    elif token in [FloParser.EQUALITY]:
+                    elif token in [FloParser.GTREQ]:
                         self.state = 99
-                        self.match(FloParser.EQUALITY)
+                        self.match(FloParser.GTREQ)
                         self.state = 100
+                        self.compound_expression_mult_div()
+                        pass
+                    elif token in [FloParser.LESSEQ]:
+                        self.state = 101
+                        self.match(FloParser.LESSEQ)
+                        self.state = 102
+                        self.compound_expression_mult_div()
+                        pass
+                    elif token in [FloParser.EQUALITY]:
+                        self.state = 103
+                        self.match(FloParser.EQUALITY)
+                        self.state = 104
                         self.compound_expression_mult_div()
                         pass
                     else:
                         raise NoViableAltException(self)
              
-                self.state = 105
+                self.state = 109
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,10,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -957,40 +976,40 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_compound_expression_mult_div)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 106
+            self.state = 110
             self.compound_expression_comparison()
-            self.state = 115
+            self.state = 119
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,11,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,12,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 113
+                    self.state = 117
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [FloParser.MULT]:
-                        self.state = 107
+                        self.state = 111
                         self.match(FloParser.MULT)
-                        self.state = 108
+                        self.state = 112
                         self.compound_expression_plus_minus()
                         pass
                     elif token in [FloParser.DIV]:
-                        self.state = 109
+                        self.state = 113
                         self.match(FloParser.DIV)
-                        self.state = 110
+                        self.state = 114
                         self.compound_expression_plus_minus()
                         pass
                     elif token in [FloParser.MOD]:
-                        self.state = 111
+                        self.state = 115
                         self.match(FloParser.MOD)
-                        self.state = 112
+                        self.state = 116
                         self.compound_expression_plus_minus()
                         pass
                     else:
                         raise NoViableAltException(self)
              
-                self.state = 117
+                self.state = 121
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,11,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,12,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1049,34 +1068,34 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_compound_expression_plus_minus)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 118
+            self.state = 122
             self.compound_expression_mult_div()
-            self.state = 125
+            self.state = 129
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 123
+                    self.state = 127
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [FloParser.PLUS]:
-                        self.state = 119
+                        self.state = 123
                         self.match(FloParser.PLUS)
-                        self.state = 120
+                        self.state = 124
                         self.compound_expression_and()
                         pass
                     elif token in [FloParser.MINUS]:
-                        self.state = 121
+                        self.state = 125
                         self.match(FloParser.MINUS)
-                        self.state = 122
+                        self.state = 126
                         self.compound_expression_and()
                         pass
                     else:
                         raise NoViableAltException(self)
              
-                self.state = 127
+                self.state = 131
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1129,20 +1148,20 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_compound_expression_and)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 128
+            self.state = 132
             self.compound_expression_plus_minus()
-            self.state = 133
+            self.state = 137
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 129
+                    self.state = 133
                     self.match(FloParser.AND)
-                    self.state = 130
+                    self.state = 134
                     self.compound_expression_or() 
-                self.state = 135
+                self.state = 139
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1195,20 +1214,20 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_compound_expression_or)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 136
+            self.state = 140
             self.compound_expression_and()
-            self.state = 141
+            self.state = 145
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 137
+                    self.state = 141
                     self.match(FloParser.OR)
-                    self.state = 138
+                    self.state = 142
                     self.compound_expression_putvalue() 
-                self.state = 143
+                self.state = 147
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1261,20 +1280,20 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_compound_expression_putvalue)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144
+            self.state = 148
             self.compound_expression_or()
-            self.state = 149
+            self.state = 153
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 145
+                    self.state = 149
                     self.match(FloParser.PUTVALUE)
-                    self.state = 146
+                    self.state = 150
                     self.compound_expression() 
-                self.state = 151
+                self.state = 155
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1323,20 +1342,20 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 22, self.RULE_compound_expression)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 152
+            self.state = 156
             self.compound_expression_putvalue()
-            self.state = 157
+            self.state = 161
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 153
+                    self.state = 157
                     self.match(FloParser.BINDTO)
-                    self.state = 154
+                    self.state = 158
                     self.compound_expression_putvalue() 
-                self.state = 159
+                self.state = 163
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,17,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1376,7 +1395,7 @@ class FloParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_statement)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 160
+            self.state = 164
             self.compound_expression()
         except RecognitionException as re:
             localctx.exception = re
@@ -1439,33 +1458,33 @@ class FloParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 162
+            self.state = 166
             self.match(FloParser.COMPONENT)
-            self.state = 163
+            self.state = 167
             self.match(FloParser.ID)
-            self.state = 164
-            self.match(FloParser.LCB)
             self.state = 168
+            self.match(FloParser.LCB)
+            self.state = 172
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==FloParser.DEC:
-                self.state = 165
+                self.state = 169
                 self.declaration()
-                self.state = 170
+                self.state = 174
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 174
+            self.state = 178
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << FloParser.NUMBER) | (1 << FloParser.NEGATION) | (1 << FloParser.LPAREN) | (1 << FloParser.STRING) | (1 << FloParser.BOOL) | (1 << FloParser.ID))) != 0):
-                self.state = 171
+                self.state = 175
                 self.statement()
-                self.state = 176
+                self.state = 180
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 177
+            self.state = 181
             self.match(FloParser.RCB)
         except RecognitionException as re:
             localctx.exception = re
@@ -1492,6 +1511,13 @@ class FloParser ( Parser ):
 
         def RCB(self):
             return self.getToken(FloParser.RCB, 0)
+
+        def module(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(FloParser.ModuleContext)
+            else:
+                return self.getTypedRuleContext(FloParser.ModuleContext,i)
+
 
         def component(self, i:int=None):
             if i is None:
@@ -1535,45 +1561,49 @@ class FloParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 179
+            self.state = 183
             self.match(FloParser.MODULE)
-            self.state = 180
+            self.state = 184
             self.match(FloParser.ID)
-            self.state = 181
+            self.state = 185
             self.match(FloParser.LCB)
-            self.state = 186
+            self.state = 191
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==FloParser.DEC or _la==FloParser.COMPONENT:
-                self.state = 184
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << FloParser.DEC) | (1 << FloParser.MODULE) | (1 << FloParser.COMPONENT))) != 0):
+                self.state = 189
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [FloParser.COMPONENT]:
-                    self.state = 182
+                if token in [FloParser.MODULE]:
+                    self.state = 186
+                    self.module()
+                    pass
+                elif token in [FloParser.COMPONENT]:
+                    self.state = 187
                     self.component()
                     pass
                 elif token in [FloParser.DEC]:
-                    self.state = 183
+                    self.state = 188
                     self.declaration()
                     pass
                 else:
                     raise NoViableAltException(self)
 
-                self.state = 188
+                self.state = 193
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 192
+            self.state = 197
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << FloParser.NUMBER) | (1 << FloParser.NEGATION) | (1 << FloParser.LPAREN) | (1 << FloParser.STRING) | (1 << FloParser.BOOL) | (1 << FloParser.ID))) != 0):
-                self.state = 189
-                self.statement()
                 self.state = 194
+                self.statement()
+                self.state = 199
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 195
+            self.state = 200
             self.match(FloParser.RCB)
         except RecognitionException as re:
             localctx.exception = re

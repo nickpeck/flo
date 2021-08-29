@@ -7,7 +7,7 @@ from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
-from . runtime import setup_default_runtime, Component, Filter
+from . runtime import setup_default_runtime, Component, Filter, Module
 from . stream import AsyncStream, Subscriber
 
 class FloListenerImpl(FloListener):
@@ -84,17 +84,31 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#getAttrib.
     def enterGetAttrib(self, ctx:FloParser.GetAttribContext):
+        if self.isGetAttrib:
+            return
         self.isGetAttrib = True
         left = ctx.children[0].getText()
-        right = ctx.children[2].getText()
+        rights = ctx.children[2].getText().split(".")
+        
+        right = rights[0]
         # TODO better way to do this, using magic methods?
+        returnval = None
         try:
-            self.register.append(self.module.locals[left].outputs[right])
+            returnval = (self.module.locals[left].outputs[right])
         except KeyError:
             try:
-                self.register.append(self.module.locals[left].inputs[right])
+                returnval = (self.module.locals[left].inputs[right])
             except KeyError:
-                self.register.append(self.module.locals[left].locals[right])
+                returnval = (self.module.locals[left].locals[right])
+        for r in rights[1:]:
+            try:
+                returnval = (returnval.outputs[r])
+            except KeyError:
+                try:
+                    returnval = (returnval.inputs[r])
+                except KeyError:
+                    returnval = (returnval.locals[r])
+        self.register.append(returnval)
 
     # Exit a parse tree produced by FloParser#getAttrib.
     def exitGetAttrib(self, ctx:FloParser.GetAttribContext):
@@ -602,10 +616,18 @@ class FloListenerImpl(FloListener):
         mod_name = ctx.children[1].getText()
         if mod_name == "main":
             return
+        m = Module(mod_name)
+        m.parent = self.module
+        # print(">>>>>>>>>", c.__dict__)
+        self.module.declare_local(mod_name, m)
+        self.module = m
         # TODO else....
 
     # Exit a parse tree produced by FloParser#module.
     def exitModule(self, ctx:FloParser.ModuleContext):
         #print(self.module.locals, self.module.inputs, self.module.outputs)
         if self.module.parent is not None:
+            nested_mod = self.module
             self.module = self.module.parent
+            self.module.declare_local(nested_mod.name, nested_mod)
+        

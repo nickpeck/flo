@@ -16,19 +16,19 @@ class ParserTests(unittest.TestCase):
         def _unwrap(i):
             while isinstance(i, AsyncStream):
                 i = i.peek()
-            return i
+            return str(i)
 
         active_runtime = AsyncStream[str]
 
         _builtin_stdout = AsyncStream[Any]()
         await _builtin_stdout.subscribe(
             Subscriber[str](
-                on_next = lambda s : self.stdout.append(_unwrap(str(s)))))
+                on_next = lambda s : self.stdout.append(_unwrap(s))))
 
         _builtin_stderr = AsyncStream[Any]()
         await _builtin_stderr.subscribe(
             Subscriber[str](
-                on_next = lambda s : self.stderr.append(_unwrap(str(s)))))
+                on_next = lambda s : self.stderr.append(_unwrap(s))))
 
         _builtin_runtime = AsyncStream[str]()
         await _builtin_runtime.subscribe(active_runtime)
@@ -203,6 +203,34 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['17']
+
+    def test_nested_modules1(self):
+        src = """
+            module main {
+                module inner {
+                    dec output x : str
+                    x <- "hello from inner!"
+                }
+                stdout <- inner.x
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["hello from inner!"]
+
+    def test_nested_modules2(self):
+        src = """
+            module main {
+                module middle {
+                    module inner {
+                        dec output x : str
+                        x <- "hello from inner!"
+                    }
+                }
+                stdout <- middle.inner.x
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["hello from inner!"]
 
 if __name__ == "__main__":
     unittest.main()
