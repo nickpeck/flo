@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+import inspect
 from typing import Any
 import sys
 
@@ -135,6 +137,36 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#id.
     def exitId(self, ctx:FloParser.IdContext):
         pass
+
+    # Enter a parse tree produced by FloParser#import_statement.
+    def enterImport_statement(self, ctx:FloParser.Import_statementContext):
+        #print([c.getText() for c in ctx.children])
+        self.isGetAttrib = True
+        # POC simple import only for now!
+        if len(ctx.children) == 2:
+            libname = ctx.children[1].getText()
+            imported = importlib.import_module(libname)
+            # https://docs.python.org/3/library/inspect.html
+            c = Component(libname)
+            for name, obj in inspect.getmembers(imported):
+                def _wrap_py_func(f):
+                    i_s = AsyncStream()
+                    o_s = asyncio.run(AsyncStream.computed(
+                        lambda *_input: obj(*_input), # type: ignore
+                        [i_s]
+                    ))
+                    return i_s, o_s
+
+                if inspect.ismethod(obj) or inspect.isfunction(obj):
+                    input_stream, output_stream = _wrap_py_func(obj)
+                    c.declare_input(name+"_input", input_stream)
+                    c.declare_output(name+"_output", output_stream)
+            self.module.declare_local(libname, c)
+
+    # Exit a parse tree produced by FloParser#import_statement.
+    def exitImport_statement(self, ctx:FloParser.Import_statementContext):
+        self.isGetAttrib = False
+
 
 
     # # Enter a parse tree produced by FloParser#declaration.

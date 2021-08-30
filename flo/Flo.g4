@@ -43,6 +43,9 @@ COMPONENT: 'component';
 NEW: 'new';
 INPUT: 'input';
 OUTPUT: 'output';
+IMPORT: 'import';
+FROM: 'from';
+AS: 'as';
 
 //primitaves
 STRING:('"' ~('"')* '"') | ('\'' ~('\'')* '\'');
@@ -57,6 +60,11 @@ atom: STRING #string
 	| atom (DOT atom)+ #getAttrib
 	| ( LPAREN compound_expression COMMA RPAREN 
 		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple;
+
+import_statement:
+	(IMPORT ID (DOT ID)*)
+	| (FROM ID (DOT ID)* IMPORT (ID)*)
+	(AS ID)?;
 
 declaration: 
 	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
@@ -147,4 +155,4 @@ statement: compound_expression;
 
 component: COMPONENT ID LCB (declaration)* (statement)* RCB;
 
-module: MODULE ID LCB (module | component | declaration)*  (statement)* RCB ;
+module: MODULE ID LCB (import_statement)* (module | component | declaration)*  (statement)* RCB ;

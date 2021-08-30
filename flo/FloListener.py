@@ -62,6 +62,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#import_statement.
+    def enterImport_statement(self, ctx:FloParser.Import_statementContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#import_statement.
+    def exitImport_statement(self, ctx:FloParser.Import_statementContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
         pass

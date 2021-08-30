@@ -250,5 +250,16 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["hello from inner!"]
 
+    def test_import_func_from_python_stdlib(self):
+        src = """
+            module main {
+                import testimport
+                testimport.myfunc_output -> stdout
+                testimport.myfunc_input <- ("hello","imported module!")
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['hello imported module!']
+        
 if __name__ == "__main__":
     unittest.main()
