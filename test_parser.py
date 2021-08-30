@@ -175,6 +175,35 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['17']
 
+    def test_computed_feedback_loop(self):
+        src = """
+            module main {
+                dec x : int
+                dec y : int = x * x
+                y -> stdout
+                y -> x
+                x <- 2
+            }
+        """
+        with self.assertRaises(RuntimeError) as re:
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert re.exception.args == ("Cannot bind to a dependant",)
+
+    def test_computed_feedback_loop_two_levels(self):
+        src = """
+            module main {
+                dec x : int
+                dec y : int = x * x
+                dec z : int = y * y
+                z -> stdout
+                z -> x
+                x <- 2
+            }
+        """
+        with self.assertRaises(RuntimeError) as re:
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert re.exception.args == ("Cannot bind to a dependant",)
+
     def test_comparison_operators(self):
         src = """
             module main {

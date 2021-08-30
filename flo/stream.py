@@ -25,7 +25,7 @@ class AsyncStream(Generic[T]):
     """Presents a stream that allows for asynchronous
     communication between multiple subscribers.
     """
-    def __init__(self, head=None):
+    def __init__(self, head=None, dependants=None):
         """Initialize a AsyncStream, where head is 
         an initial value of Type T
         """
@@ -33,6 +33,10 @@ class AsyncStream(Generic[T]):
         if head:
             self._v = head
         self._subscribers = []
+        if dependants is None:
+            self._dependants = []
+        else:
+            self._dependants = dependants
 
     def __str__(self):
         return "<AsyncStream {}>".format(self._v)
@@ -65,6 +69,8 @@ class AsyncStream(Generic[T]):
         in this stream. Return the initial stream.
         Raise an exception if attempting to bind a stream to itself.
         """
+        if other in self._dependants:
+            raise RuntimeError("Cannot bind to a dependant")
         if other == self:
             raise Exception("AsyncStream cannot bind to itself")
         s = Subscriber[T](
@@ -135,7 +141,7 @@ class AsyncStream(Generic[T]):
                 return func(*_args_, *_args, **kwargs, **_kwags)
             return inner
 
-        output_stream = AsyncStream[T]()
+        output_stream = AsyncStream[T](None, dependants)
         bound_func = _bind(func, *dependants)
         async def _on_next(x):
             nonlocal bound_func
