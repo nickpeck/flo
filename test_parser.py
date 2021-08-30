@@ -68,6 +68,14 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["('the answer is', 42)"]
 
+    def test_tuple_containing_an_expr(self):
+        src = """
+            module main {
+                stdout <- ("the answer is", 40 + 2)
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["('the answer is', 42)"]
 
     def test_simple_addition(self):
         src = """

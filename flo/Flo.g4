@@ -55,7 +55,8 @@ atom: STRING #string
 	| BOOL #bool
 	| ID #id
 	| atom (DOT atom)+ #getAttrib
-	| (LPAREN atom COMMA RPAREN | LPAREN atom (COMMA atom)+ RPAREN) #tuple;
+	| ( LPAREN compound_expression COMMA RPAREN 
+		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple;
 
 declaration: 
 	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
