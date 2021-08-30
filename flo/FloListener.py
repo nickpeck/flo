@@ -17,6 +17,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#tuple.
+    def enterTuple(self, ctx:FloParser.TupleContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#tuple.
+    def exitTuple(self, ctx:FloParser.TupleContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#string.
     def enterString(self, ctx:FloParser.StringContext):
         pass
@@ -89,15 +98,6 @@ class FloListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by FloParser#compound_expression_paren.
-    def enterCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
-        pass
-
-    # Exit a parse tree produced by FloParser#compound_expression_paren.
-    def exitCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
-        pass
-
-
     # Enter a parse tree produced by FloParser#compound_expression_not.
     def enterCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
         pass
@@ -167,6 +167,15 @@ class FloListener(ParseTreeListener):
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#compound_expression_paren.
+    def enterCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compound_expression_paren.
+    def exitCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
         pass
 
 

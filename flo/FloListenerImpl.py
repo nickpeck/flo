@@ -81,7 +81,6 @@ class FloListenerImpl(FloListener):
     def exitBool(self, ctx:FloParser.BoolContext):
         pass
 
-
     # Enter a parse tree produced by FloParser#getAttrib.
     def enterGetAttrib(self, ctx:FloParser.GetAttribContext):
         if self.isGetAttrib:
@@ -570,6 +569,18 @@ class FloListenerImpl(FloListener):
             self.register = []
         pass
 
+    # Enter a parse tree produced by FloParser#compund_expression_tuple.
+    def enterTuple(self, ctx:FloParser.TupleContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#compund_expression_tuple.
+    def exitTuple(self, ctx:FloParser.TupleContext):
+        tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","], 
+            [c.getText() for c in ctx.children])))
+        _tuple = tuple(self.register[-tuple_length:])
+        self.register = self.register[:-tuple_length] + [_tuple]
+        pass
+
     # Enter a parse tree produced by FloParser#compound_expression.
     def enterCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         pass
@@ -581,7 +592,6 @@ class FloListenerImpl(FloListener):
             self.register = []
         pass
 
-
     # Enter a parse tree produced by FloParser#statement.
     def enterStatement(self, ctx:FloParser.StatementContext):
         self.register = []
@@ -591,7 +601,6 @@ class FloListenerImpl(FloListener):
         #print(self.register)
         #print(self.module.locals, self.module.inputs, self.module.outputs)
         pass
-
 
     # Enter a parse tree produced by FloParser#component.
     def enterComponent(self, ctx:FloParser.ComponentContext):

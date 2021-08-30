@@ -54,7 +54,8 @@ atom: STRING #string
 	| NUMBER #number
 	| BOOL #bool
 	| ID #id
-	| atom (DOT atom)+ #getAttrib;
+	| atom (DOT atom)+ #getAttrib
+	| (LPAREN atom COMMA RPAREN | LPAREN atom (COMMA atom)+ RPAREN) #tuple;
 
 declaration: 
 	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
@@ -64,12 +65,6 @@ declaration:
 compound_expression_filter
 	:
 		LCB ID COLON compound_expression_comparison RCB
-	;
-
-compound_expression_paren
-	:
-		atom
-		| LPAREN compound_expression RPAREN
 	;
 
 compound_expression_not
@@ -140,6 +135,12 @@ compound_expression:
 		BINDTO compound_expression_putvalue
 	)*
 ;
+
+compound_expression_paren
+	:
+		atom
+		| LPAREN compound_expression RPAREN
+	;
 
 statement: compound_expression;
 
