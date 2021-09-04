@@ -8,8 +8,6 @@ from . import AsyncStream, Subscriber
 class Module:
     def __init__(self, name, **opts):
         self.name = name
-        # self.inputs = {}
-        # self.outputs = {}
         self.locals = {k:("local", opts[k]) for k in opts.keys()}
         self.parent = None
 
@@ -45,8 +43,6 @@ class Component(Module):
 
     def duplicate(self, **overrides):
         c = Component(self.name)
-        # c.inputs = self.inputs
-        # c.output = self.outputs
         c.locals = self.locals
         for key in overrides.keys():
             if key in c.locals:
