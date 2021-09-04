@@ -175,6 +175,19 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["(42, 'Hello world', True)"]
 
+    def test_vars_are_immutable_within_scope(self):
+        src = """
+            module main {
+                dec {
+                    x : int
+                    x : str
+                }
+            }
+        """
+        with self.assertRaises(Exception) as e:
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert e.exception.args == ("Variable 'x' is already defined",)
+
     def test_computed_addition_bind_to_output(self):
         src = """
             module main {

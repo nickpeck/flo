@@ -13,14 +13,21 @@ class Module:
         self.locals = {k:("local", opts[k]) for k in opts.keys()}
         self.parent = None
 
+    def _check_is_not_defined(self, name):
+        if name in self.locals:
+            raise Exception("Variable '{}' is already defined".format(name))
+
     def declare_local(self, name: str, 
         attr: Union[AsyncStream, Component, Module]):
+        self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
 
     def declare_input(self, name: str, pipe: AsyncStream):
+        self._check_is_not_defined(name)
         self.locals[name] = ("input", pipe)
 
     def declare_output(self, name: str, pipe: AsyncStream):
+        self._check_is_not_defined(name)
         self.locals[name] =("output", pipe)
 
     def get_member(self, name):
