@@ -20,44 +20,47 @@ class ModuleTests(unittest.TestCase):
     def test_module_creation(self):
         mod = runtime.Module("mymod", x=3, y=4)
         assert mod.locals == {
-            "x" : 3,
-            "y" : 4
+            'x': ('local', 3),
+            'y': ('local', 4),
         }
 
     def test_declare_local(self):
         mod = runtime.Module("mymod", x=3, y=4)
         mod.declare_local('z', "hello")
         assert mod.locals == {
-            "x" : 3,
-            "y" : 4,
-            "z": "hello"
+            'x': ('local', 3),
+            'y': ('local', 4),
+            "z": ('local', "hello")
         }
 
     def test_declare_input(self):
         mod = runtime.Module("mymod", x=3, y=4)
-        mod.declare_input('a', "input")
-        assert mod.inputs == {
-            "a": "input"
-        }
+        mod.declare_input('a', "myinput")
+        assert mod.locals == {
+            'x': ('local', 3),
+            'y': ('local', 4), 
+            'a': ('input', 'myinput')}
 
     def test_declare_output(self):
         mod = runtime.Module("mymod", x=3, y=4)
-        mod.declare_output('b', "output")
-        assert mod.outputs == {
-            "b": "output"
+        mod.declare_output('b', "myoutput")
+        assert mod.locals == {
+            'x': ('local', 3),
+            'y': ('local', 4),
+            "b": ("output", "myoutput")
         }
 
 class ComponentTests(unittest.TestCase):
     def test_duplicate(self):
         comp = runtime.Component("mycomp", x=3, y=4)
         assert comp.locals == {
-            "x" : 3,
-            "y" : 4
+            "x" : ("local", 3),
+            "y" : ("local", 4)
         }
         comp2 = comp.duplicate(y=5)
         assert comp2.locals == {
-            "x" : 3,
-            "y" : 5
+            "x" : ("local", 3),
+            "y" : ("local", 5)
         }
 
     def test_duplicate_only_allows_override_existing_locals(self):

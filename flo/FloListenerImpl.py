@@ -46,22 +46,23 @@ class FloListenerImpl(FloListener):
         super().__init__()
         self.register = []
         if main_module is None:
-            self.module = asyncio.run(setup_default_runtime())
+            self.scope = asyncio.run(setup_default_runtime())
         else:
-            self.module = main_module
+            self.scope = main_module
         self.isGetAttrib = False
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
-        scope.parent = self.module
+        scope.parent = self.scope
         if name is not None:
-            self.module.declare_local(name, scope)
-        self.module = scope
+            self.scope.declare_local(name, scope)
+        self.scope = scope
 
     def _exit_nested_scope(self):
-        self.module = self.module.parent
+        self.scope = self.scope.parent
 
     # Enter a parse tree produced by FloParser#number.
     def enterNumber(self, ctx:FloParser.NumberContext):
+        # allow integer or float types
         try:
             value = int(ctx.children[0].getText())
         except ValueError:
@@ -105,22 +106,23 @@ class FloListenerImpl(FloListener):
         
         right = rights[0]
         # TODO better way to do this, using magic methods?
-        returnval = None
-        try:
-            returnval = (self.module.locals[left].outputs[right])
-        except KeyError:
-            try:
-                returnval = (self.module.locals[left].inputs[right])
-            except KeyError:
-                returnval = (self.module.locals[left].locals[right])
+        returnval = self.scope.get_member(left).get_member(right)
+        # try:
+            # returnval = (self.scope.locals[left].outputs[right])
+        # except KeyError:
+            # try:
+                # returnval = (self.scope.locals[left].inputs[right])
+            # except KeyError:
+                # returnval = (self.scope.locals[left].locals[right])
         for r in rights[1:]:
-            try:
-                returnval = (returnval.outputs[r])
-            except KeyError:
-                try:
-                    returnval = (returnval.inputs[r])
-                except KeyError:
-                    returnval = (returnval.locals[r])
+            returnval = returnval.get_member(r)
+            # try:
+                # returnval = (returnval.outputs[r])
+            # except KeyError:
+                # try:
+                    # returnval = (returnval.inputs[r])
+                # except KeyError:
+                    # returnval = (returnval.locals[r])
         self.register.append(returnval)
 
     # Exit a parse tree produced by FloParser#getAttrib.
@@ -136,15 +138,16 @@ class FloListenerImpl(FloListener):
         # print(dir(ctx))
         id = ctx.children[0].getText()
         # print(ctx.start)
-        # print(self.module.locals)
+        # print(self.scope.locals)
         # TODO better way to do this, using magic methods?
-        try:
-            self.register.append(self.module.locals[id])
-        except KeyError:
-            try:
-                self.register.append(self.module.inputs[id])
-            except KeyError:
-                self.register.append(self.module.outputs[id])
+        self.register.append(self.scope.get_member(id))
+        # try:
+            # self.register.append(self.scope.locals[id])
+        # except KeyError:
+            # try:
+                # self.register.append(self.scope.inputs[id])
+            # except KeyError:
+                # self.register.append(self.scope.outputs[id])
         
     # Exit a parse tree produced by FloParser#id.
     def exitId(self, ctx:FloParser.IdContext):
@@ -164,7 +167,7 @@ class FloListenerImpl(FloListener):
                     wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
                     c.declare_input(name, wrapper_stream)
 
-            self.module.declare_local(libname, c)
+            self.scope.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.
     def exitImport_statement(self, ctx:FloParser.Import_statementContext):
@@ -178,19 +181,19 @@ class FloListenerImpl(FloListener):
             # _type = ctx.children[4].getText()
             # id = ctx.children[2].getText()
             # stream = AsyncStream[_type]()
-            # self.module.declare_output(id, stream)
+            # self.scope.declare_output(id, stream)
             # self.register.append(stream)
         # elif ctx.children[1].getText() == "input":
             # _type = ctx.children[4].getText()
             # id = ctx.children[2].getText()
             # stream = AsyncStream[_type]()
-            # self.module.declare_input(id, stream)
+            # self.scope.declare_input(id, stream)
             # self.register.append(stream)
         # else:
             # _type = ctx.children[3].getText()
             # id = ctx.children[1].getText()
             # stream = AsyncStream[_type]()
-            # self.module.declare_local(id, stream)
+            # self.scope.declare_local(id, stream)
             # self.register.append(stream)
 
     # # Exit a parse tree produced by FloParser#declaration.
@@ -204,21 +207,21 @@ class FloListenerImpl(FloListener):
             _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
-            self.module.declare_output(id, stream)
+            self.scope.declare_output(id, stream)
         elif ctx.children[0].getText() == "input":
             _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
-            self.module.declare_input(id, stream)
+            self.scope.declare_input(id, stream)
         else:
             _type = ctx.children[2].getText()
             id = ctx.children[0].getText()
-            if _type in self.module.locals and isinstance(self.module.locals[_type], Component):
-                comp_instance = self.module.locals[_type]
-                self.module.declare_local(id, comp_instance)
+            if _type in self.scope.locals and isinstance(self.scope.get_member(_type), Component):
+                comp_instance = self.scope.get_member(_type)
+                self.scope.declare_local(id, comp_instance)
             else:
                 stream = AsyncStream[_type]() # type: ignore
-                self.module.declare_local(id, stream)
+                self.scope.declare_local(id, stream)
 
     # Exit a parse tree produced by FloParser#simpleDeclaration.
     def exitSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
@@ -233,19 +236,19 @@ class FloListenerImpl(FloListener):
             # _type = ctx.children[4].getText()
             # id = ctx.children[2].getText()
             # # stream = AsyncStream[_type]()
-            # # self.module.declare_output(id, stream)
+            # # self.scope.declare_output(id, stream)
             # # self.register.append(stream)
         # elif ctx.children[1].getText() == "input":
             # _type = ctx.children[4].getText()
             # id = ctx.children[2].getText()
             # # stream = AsyncStream[_type]()
-            # # self.module.declare_input(id, stream)
+            # # self.scope.declare_input(id, stream)
             # # self.register.append(stream)
         # else:
             # _type = ctx.children[3].getText()
             # id = ctx.children[1].getText()
             # # stream = AsyncStream[_type]()
-            # # self.module.declare_local(id, stream)
+            # # self.scope.declare_local(id, stream)
             # # self.register.append(stream)
         # # print("GOT HERE 2")
 
@@ -258,7 +261,7 @@ class FloListenerImpl(FloListener):
             id = ctx.children[1].getText()
         else:
             id = ctx.children[0].getText()
-        self.module.declare_local(id, self.register[0])
+        self.scope.declare_local(id, self.register[0])
         self.register = self.register[1:]
 
     # # Enter a parse tree produced by FloParser#filterDeclaration.
@@ -274,31 +277,32 @@ class FloListenerImpl(FloListener):
             id = ctx.children[1].getText()
         else:
             id = ctx.children[0].getText()
-        self.module.declare_local(id, self.register[0])
+        self.scope.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         # so given {x : x<5} we declare a hidden module where x is the only local
         id = ctx.children[0].getText()
         # TODO better way to do this, using magic methods?
-        try:
-            var = self.module.locals[id]
-        except KeyError:
-            try:
-                var = self.module.inputs[id]
-            except KeyError:
-                var = self.module.outputs[id]
+        var = self.scope.get_member(id)
+        # try:
+            # var = self.scope.locals[id]
+        # except KeyError:
+            # try:
+                # var = self.scope.inputs[id]
+            # except KeyError:
+                # var = self.scope.outputs[id]
         m = Filter(id, var)
         self._enter_nested_scope(m)
-        #m.parent = self.module
-        #self.module = m
+        #m.parent = self.scope
+        #self.scope = m
         pass
 
     # Exit a parse tree produced by FloParser#compound_expression_filter.
     def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         id = ctx.children[0].getText()
         output = AsyncStream[Any]()
-        input = self.module.inputs[id]
+        input = self.scope.get_member(id)
         async def f(truthy):
             nonlocal output
             nonlocal input
@@ -310,12 +314,12 @@ class FloListenerImpl(FloListener):
                 on_next = f
             )
         ))
-        self.module.declare_output("output", output)
-        filter = self.module
-        #self.module = self.module.parent
+        self.scope.declare_output("output", output)
+        filter = self.scope
+        #self.scope = self.scope.parent
         self._exit_nested_scope()
-        #self.module.declare_local(id, filter.outputs["output"])
-        self.register[-1] = filter.outputs["output"]
+        #self.scope.declare_local(id, filter.outputs["output"])
+        self.register[-1] = filter.get_member("output")
 
     # Enter a parse tree produced by FloParser#compound_expression_comparison.
     def enterCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
@@ -639,13 +643,13 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#statement.
     def exitStatement(self, ctx:FloParser.StatementContext):
         #print(self.register)
-        #print(self.module.locals, self.module.inputs, self.module.outputs)
+        #print(self.scope.locals, self.scope.inputs, self.scope.outputs)
         pass
 
     # Enter a parse tree produced by FloParser#component.
     def enterComponent(self, ctx:FloParser.ComponentContext):
         # print("enterComponent", ctx.children[1].getText())
-        # print("-----------------", self.module)
+        # print("-----------------", self.scope)
         comp_name = ctx.children[1].getText()
         c = Component(comp_name)
         self._enter_nested_scope(c, comp_name)
@@ -666,6 +670,6 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#module.
     def exitModule(self, ctx:FloParser.ModuleContext):
-        #print(self.module.locals, self.module.inputs, self.module.outputs)
+        #print(self.scope.locals, self.scope.inputs, self.scope.outputs)
         self._exit_nested_scope()
         
