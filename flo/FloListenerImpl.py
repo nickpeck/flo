@@ -200,6 +200,16 @@ class FloListenerImpl(FloListener):
             id = ctx.children[0].getText()
         self.scope.declare_local(id, self.register[0])
 
+    # Exit a parse tree produced by FloParser#joinDeclaration.
+    def exitJoinDeclaration(self, ctx:FloParser.JoinDeclarationContext):
+        if ctx.children[0].getText() == "output":
+            id = ctx.children[1].getText()
+        elif ctx.children[0].getText() == "input":
+            id = ctx.children[1].getText()
+        else:
+            id = ctx.children[0].getText()
+        self.scope.declare_local(id, self.register[0])
+
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         # so given {x : x<5} we declare a hidden module where x is the only local
@@ -228,6 +238,14 @@ class FloListenerImpl(FloListener):
         filter = self.scope
         self._exit_nested_scope()
         self.register[-1] = filter.get_member("output")
+
+    # Exit a parse tree produced by FloParser#compound_expression_join.
+    def exitCompound_expression_join(self, ctx:FloParser.Compound_expression_joinContext):
+        left = self.register[-2]
+        right = self.register[-1]
+        self.register = self.register[:-2]
+        joined = asyncio.run(left.joinTo(right))
+        self.register.append(joined)
 
     # Exit a parse tree produced by FloParser#compound_expression_comparison.
     def exitCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):

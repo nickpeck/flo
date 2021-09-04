@@ -29,6 +29,7 @@ COLON: ':';
 OR: 'or';
 AND: 'and';
 FILTER: '|';
+JOIN: '&';
 
 //punctuation
 LCB     :       '{';
@@ -80,15 +81,25 @@ filterDeclaration:
 	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_filter)
 ;
 
+joinDeclaration:
+	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_join)
+;
+
 declaration:
 	DEC (
         LCB (
             simpleDeclaration
             | computedDeclaration
             | filterDeclaration
+            | joinDeclaration
         )+ RCB
     | (simpleDeclaration | computedDeclaration | filterDeclaration)
     );
+
+compound_expression_join
+	:
+		compound_expression_comparison JOIN compound_expression_comparison
+	;
 
 compound_expression_filter
 	:
