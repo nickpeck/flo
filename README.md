@@ -163,5 +163,12 @@ module main {
 }
 ~~~
 
+## Rebuilding the 
+Antlr 4 is used to generate the language parser. (You'll need antlr-4.7-complete.jar)
+After updating flo\flo.g4, run the following from the root folder to rebuild the lexer and parser:
+~~~
+java -jar antlr\antlr-4.7-complete.jar -package flo -Dlanguage=Python3 flo\Flo.g4
+~~~
+
 ## Further Reading
 see test_parser.py for various test cases that illustrate the evolving nature of the language.
