@@ -20,19 +20,31 @@ class FloListenerImpl(FloListener):
     @staticmethod
     def loadModule(name, main_module=None):
         input_stream = FileStream(name)
-        lexer = FloLexer(input_stream)
-        stream = CommonTokenStream(lexer)
-        parser = FloParser(stream)
-        tree = parser.module()
-        listener = FloListenerImpl(main_module)
-        walker = ParseTreeWalker()
-        walker.addErrorListener( MyErrorListener() )
-        walker.walk(listener, tree)
-        return listener
+        return FloListenerImpl.parse_module(input_stream, main_module)
+        # lexer = FloLexer(input_stream)
+        # stream = CommonTokenStream(lexer)
+        # parser = FloParser(stream)
+        # tree = parser.module()
+        # listener = FloListenerImpl(main_module)
+        # walker = ParseTreeWalker()
+        # walker.walk(listener, tree)
+        # return listener
 
     @staticmethod
     def loadString(code, main_module=None):
         input_stream = InputStream(code)
+        return FloListenerImpl.parse_module(input_stream, main_module)
+        # lexer = FloLexer(input_stream)
+        # stream = CommonTokenStream(lexer)
+        # parser = FloParser(stream)
+        # tree = parser.module()
+        # listener = FloListenerImpl(main_module)
+        # walker = ParseTreeWalker()
+        # walker.walk(listener, tree)
+        # return listener
+
+    @staticmethod
+    def parse_module(input_stream, main_module):
         lexer = FloLexer(input_stream)
         stream = CommonTokenStream(lexer)
         parser = FloParser(stream)

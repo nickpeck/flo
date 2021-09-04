@@ -1,2 +1,6 @@
 [run]
 source = flo
+omit = 
+ flo\FloLexer.py
+ flo\FloListener.py
+ flo\FloParser.py
