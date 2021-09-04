@@ -20,31 +20,15 @@ class FloListenerImpl(FloListener):
     @staticmethod
     def loadModule(name, main_module=None):
         input_stream = FileStream(name)
-        return FloListenerImpl.parse_module(input_stream, main_module)
-        # lexer = FloLexer(input_stream)
-        # stream = CommonTokenStream(lexer)
-        # parser = FloParser(stream)
-        # tree = parser.module()
-        # listener = FloListenerImpl(main_module)
-        # walker = ParseTreeWalker()
-        # walker.walk(listener, tree)
-        # return listener
+        return FloListenerImpl._parse_module(input_stream, main_module)
 
     @staticmethod
     def loadString(code, main_module=None):
         input_stream = InputStream(code)
-        return FloListenerImpl.parse_module(input_stream, main_module)
-        # lexer = FloLexer(input_stream)
-        # stream = CommonTokenStream(lexer)
-        # parser = FloParser(stream)
-        # tree = parser.module()
-        # listener = FloListenerImpl(main_module)
-        # walker = ParseTreeWalker()
-        # walker.walk(listener, tree)
-        # return listener
+        return FloListenerImpl._parse_module(input_stream, main_module)
 
     @staticmethod
-    def parse_module(input_stream, main_module):
+    def _parse_module(input_stream, main_module):
         lexer = FloLexer(input_stream)
         stream = CommonTokenStream(lexer)
         parser = FloParser(stream)
@@ -61,7 +45,7 @@ class FloListenerImpl(FloListener):
             self.scope = asyncio.run(setup_default_runtime())
         else:
             self.scope = main_module
-        self.isGetAttrib = False
+        self._is_get_attrib = False
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope
@@ -115,20 +99,10 @@ class FloListenerImpl(FloListener):
             value = float(ctx.children[0].getText()) # type: ignore
         self.register.append(value)
 
-    # Exit a parse tree produced by FloParser#number.
-    def exitNumber(self, ctx:FloParser.NumberContext):
-        pass
-
-
     # Enter a parse tree produced by FloParser#string.
     def enterString(self, ctx:FloParser.StringContext):
         value = ctx.children[0].getText()[1:-1]
         self.register.append(value)
-
-    # Exit a parse tree produced by FloParser#string.
-    def exitString(self, ctx:FloParser.StringContext):
-        pass
-
 
     # Enter a parse tree produced by FloParser#bool.
     def enterBool(self, ctx:FloParser.BoolContext):
@@ -138,70 +112,35 @@ class FloListenerImpl(FloListener):
         elif value == 'false':
             self.register.append(False)
 
-    # Exit a parse tree produced by FloParser#bool.
-    def exitBool(self, ctx:FloParser.BoolContext):
-        pass
-
     # Enter a parse tree produced by FloParser#getAttrib.
     def enterGetAttrib(self, ctx:FloParser.GetAttribContext):
-        if self.isGetAttrib:
+        if self._is_get_attrib:
             return
-        self.isGetAttrib = True
+        self._is_get_attrib = True
         left = ctx.children[0].getText()
         rights = ctx.children[2].getText().split(".")
         
         right = rights[0]
-        # TODO better way to do this, using magic methods?
         returnval = self.scope.get_member(left).get_member(right)
-        # try:
-            # returnval = (self.scope.locals[left].outputs[right])
-        # except KeyError:
-            # try:
-                # returnval = (self.scope.locals[left].inputs[right])
-            # except KeyError:
-                # returnval = (self.scope.locals[left].locals[right])
         for r in rights[1:]:
             returnval = returnval.get_member(r)
-            # try:
-                # returnval = (returnval.outputs[r])
-            # except KeyError:
-                # try:
-                    # returnval = (returnval.inputs[r])
-                # except KeyError:
-                    # returnval = (returnval.locals[r])
         self.register.append(returnval)
 
     # Exit a parse tree produced by FloParser#getAttrib.
     def exitGetAttrib(self, ctx:FloParser.GetAttribContext):
-        self.isGetAttrib = False
+        self._is_get_attrib = False
         pass
-
 
     # Enter a parse tree produced by FloParser#id.
     def enterId(self, ctx:FloParser.IdContext):
-        if self.isGetAttrib:
+        if self._is_get_attrib:
             return
-        # print(dir(ctx))
         id = ctx.children[0].getText()
-        # print(ctx.start)
-        # print(self.scope.locals)
-        # TODO better way to do this, using magic methods?
         self.register.append(self.scope.get_member(id))
-        # try:
-            # self.register.append(self.scope.locals[id])
-        # except KeyError:
-            # try:
-                # self.register.append(self.scope.inputs[id])
-            # except KeyError:
-                # self.register.append(self.scope.outputs[id])
-        
-    # Exit a parse tree produced by FloParser#id.
-    def exitId(self, ctx:FloParser.IdContext):
-        pass
 
     # Enter a parse tree produced by FloParser#import_statement.
     def enterImport_statement(self, ctx:FloParser.Import_statementContext):
-        self.isGetAttrib = True
+        self._is_get_attrib = True
         # POC simple import only for now!
         if len(ctx.children) == 2:
             libname = ctx.children[1].getText()
@@ -212,43 +151,14 @@ class FloListenerImpl(FloListener):
                 if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
                     wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
                     c.declare_input(name, wrapper_stream)
-
             self.scope.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.
     def exitImport_statement(self, ctx:FloParser.Import_statementContext):
-        self.isGetAttrib = False
-
-
-
-    # # Enter a parse tree produced by FloParser#declaration.
-    # def enterDeclaration(self, ctx:FloParser.DeclarationContext):
-        # if ctx.children[1].getText() == "output":
-            # _type = ctx.children[4].getText()
-            # id = ctx.children[2].getText()
-            # stream = AsyncStream[_type]()
-            # self.scope.declare_output(id, stream)
-            # self.register.append(stream)
-        # elif ctx.children[1].getText() == "input":
-            # _type = ctx.children[4].getText()
-            # id = ctx.children[2].getText()
-            # stream = AsyncStream[_type]()
-            # self.scope.declare_input(id, stream)
-            # self.register.append(stream)
-        # else:
-            # _type = ctx.children[3].getText()
-            # id = ctx.children[1].getText()
-            # stream = AsyncStream[_type]()
-            # self.scope.declare_local(id, stream)
-            # self.register.append(stream)
-
-    # # Exit a parse tree produced by FloParser#declaration.
-    # def exitDeclaration(self, ctx:FloParser.DeclarationContext):
-        # pass
+        self._is_get_attrib = False
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
-        #print("enterSimpleDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
@@ -269,38 +179,8 @@ class FloListenerImpl(FloListener):
                 stream = AsyncStream[_type]() # type: ignore
                 self.scope.declare_local(id, stream)
 
-    # Exit a parse tree produced by FloParser#simpleDeclaration.
-    def exitSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
-        pass
-
-
-    # Enter a parse tree produced by FloParser#computedDeclaration.
-    def enterComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
-        return
-        # # print("enterComputedDeclaration")
-        # if ctx.children[1].getText() == "output":
-            # _type = ctx.children[4].getText()
-            # id = ctx.children[2].getText()
-            # # stream = AsyncStream[_type]()
-            # # self.scope.declare_output(id, stream)
-            # # self.register.append(stream)
-        # elif ctx.children[1].getText() == "input":
-            # _type = ctx.children[4].getText()
-            # id = ctx.children[2].getText()
-            # # stream = AsyncStream[_type]()
-            # # self.scope.declare_input(id, stream)
-            # # self.register.append(stream)
-        # else:
-            # _type = ctx.children[3].getText()
-            # id = ctx.children[1].getText()
-            # # stream = AsyncStream[_type]()
-            # # self.scope.declare_local(id, stream)
-            # # self.register.append(stream)
-        # # print("GOT HERE 2")
-
     # Exit a parse tree produced by FloParser#computedDeclaration.
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
-        #print("exitComputedDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
         elif ctx.children[0].getText() == "input":
@@ -310,13 +190,8 @@ class FloListenerImpl(FloListener):
         self.scope.declare_local(id, self.register[0])
         self.register = self.register[1:]
 
-    # # Enter a parse tree produced by FloParser#filterDeclaration.
-    def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        pass
-
     # Exit a parse tree produced by FloParser#filterDeclaration.
     def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        #print("exitFilterDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
         elif ctx.children[0].getText() == "input":
@@ -329,20 +204,9 @@ class FloListenerImpl(FloListener):
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         # so given {x : x<5} we declare a hidden module where x is the only local
         id = ctx.children[0].getText()
-        # TODO better way to do this, using magic methods?
         var = self.scope.get_member(id)
-        # try:
-            # var = self.scope.locals[id]
-        # except KeyError:
-            # try:
-                # var = self.scope.inputs[id]
-            # except KeyError:
-                # var = self.scope.outputs[id]
         m = Filter(id, var)
         self._enter_nested_scope(m)
-        #m.parent = self.scope
-        #self.scope = m
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_filter.
     def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
@@ -362,86 +226,43 @@ class FloListenerImpl(FloListener):
         ))
         self.scope.declare_output("output", output)
         filter = self.scope
-        #self.scope = self.scope.parent
         self._exit_nested_scope()
-        #self.scope.declare_local(id, filter.outputs["output"])
         self.register[-1] = filter.get_member("output")
-
-    # Enter a parse tree produced by FloParser#compound_expression_comparison.
-    def enterCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_comparison.
     def exitCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
-
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '>':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a > b)
 
             elif ctx.children[1].getText() == '<':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a < b)
 
             elif ctx.children[1].getText() == '>=':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a >= b)
 
             elif ctx.children[1].getText() == '<=':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a <= b)
 
             elif ctx.children[1].getText() == '==':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a == b)
-
-    # Enter a parse tree produced by FloParser#compound_expression_paren.
-    def enterCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
-        pass
-
-    # Exit a parse tree produced by FloParser#compound_expression_paren.
-    def exitCompound_expression_paren(self, ctx:FloParser.Compound_expression_parenContext):
-        pass
-
-
-    # Enter a parse tree produced by FloParser#compound_expression_not.
-    def enterCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_not.
     def exitCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
         if len(ctx.children) >= 2:
             if ctx.children[0].getText() == '!':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 right = self.register[-1]
                 self._make_computed([right], lambda a: not a)
-                # if not isinstance(right, AsyncStream):
-                    # self.register = self.register[:-1]
-                    # self.register.append(not right)
-                    # return
-
-                # #print(left, right)
-                # computed = asyncio.run(AsyncStream.computed(
-                    # lambda b: not b, # type: ignore
-                    # [right]
-                # ))
-                # self.register = self.register[:-1]
-                # self.register.append(computed)
-
-
-    # Enter a parse tree produced by FloParser#compound_expression_mult_div.
-    def enterCompound_expression_mult_div(self, ctx:FloParser.Compound_expression_mult_divContext):
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_mult_div.
     def exitCompound_expression_mult_div(self, ctx:FloParser.Compound_expression_mult_divContext):
@@ -457,11 +278,6 @@ class FloListenerImpl(FloListener):
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a / b)
 
-
-    # Enter a parse tree produced by FloParser#compound_expression_plus_minus.
-    def enterCompound_expression_plus_minus(self, ctx:FloParser.Compound_expression_plus_minusContext):
-        pass
-
     # Exit a parse tree produced by FloParser#compound_expression_plus_minus.
     def exitCompound_expression_plus_minus(self, ctx:FloParser.Compound_expression_plus_minusContext):
         if len(ctx.children) >= 3:
@@ -476,37 +292,21 @@ class FloListenerImpl(FloListener):
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a - b)
 
-
-    # Enter a parse tree produced by FloParser#compound_expression_and.
-    def enterCompound_expression_and(self, ctx:FloParser.Compound_expression_andContext):
-        pass
-
     # Exit a parse tree produced by FloParser#compound_expression_and.
     def exitCompound_expression_and(self, ctx:FloParser.Compound_expression_andContext):
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == 'and':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a and b)
-
-
-    # Enter a parse tree produced by FloParser#compound_expression_or.
-    def enterCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_or.
     def exitCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
          if len(ctx.children) >= 3:
             if ctx.children[1].getText() == 'or':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a or b)
-
-    # Enter a parse tree produced by FloParser#compound_expression_putvalue.
-    def enterCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression_putvalue.
     def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
@@ -515,20 +315,12 @@ class FloListenerImpl(FloListener):
             self.register = []
         pass
 
-    # Enter a parse tree produced by FloParser#compund_expression_tuple.
-    def enterTuple(self, ctx:FloParser.TupleContext):
-        pass
-
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):
         tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","], 
             [c.getText() for c in ctx.children])))
         _tuple = tuple(self.register[-tuple_length:])
         self.register = self.register[:-tuple_length] + [_tuple]
-        pass
-
-    # Enter a parse tree produced by FloParser#compound_expression.
-    def enterCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         pass
 
     # Exit a parse tree produced by FloParser#compound_expression.
@@ -542,25 +334,15 @@ class FloListenerImpl(FloListener):
     def enterStatement(self, ctx:FloParser.StatementContext):
         self.register = []
 
-    # Exit a parse tree produced by FloParser#statement.
-    def exitStatement(self, ctx:FloParser.StatementContext):
-        #print(self.register)
-        #print(self.scope.locals, self.scope.inputs, self.scope.outputs)
-        pass
-
     # Enter a parse tree produced by FloParser#component.
     def enterComponent(self, ctx:FloParser.ComponentContext):
-        # print("enterComponent", ctx.children[1].getText())
-        # print("-----------------", self.scope)
         comp_name = ctx.children[1].getText()
         c = Component(comp_name)
         self._enter_nested_scope(c, comp_name)
 
     # Exit a parse tree produced by FloParser#component.
     def exitComponent(self, ctx:FloParser.ComponentContext):
-        # print("exitComponent", ctx.children[1].getText())
         self._exit_nested_scope()
-
 
     # Enter a parse tree produced by FloParser#module.
     def enterModule(self, ctx:FloParser.ModuleContext):
@@ -572,6 +354,4 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#module.
     def exitModule(self, ctx:FloParser.ModuleContext):
-        #print(self.scope.locals, self.scope.inputs, self.scope.outputs)
         self._exit_nested_scope()
-        
