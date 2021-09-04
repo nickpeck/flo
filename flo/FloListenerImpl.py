@@ -1,7 +1,7 @@
 import asyncio
 import importlib
 import inspect
-from typing import Any
+from typing import Any, Union, Optional
 import sys
 
 from antlr4 import * # type: ignore
@@ -50,6 +50,15 @@ class FloListenerImpl(FloListener):
         else:
             self.module = main_module
         self.isGetAttrib = False
+
+    def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
+        scope.parent = self.module
+        if name is not None:
+            self.module.declare_local(name, scope)
+        self.module = scope
+
+    def _exit_nested_scope(self):
+        self.module = self.module.parent
 
     # Enter a parse tree produced by FloParser#number.
     def enterNumber(self, ctx:FloParser.NumberContext):
@@ -280,8 +289,9 @@ class FloListenerImpl(FloListener):
             except KeyError:
                 var = self.module.outputs[id]
         m = Filter(id, var)
-        m.parent = self.module
-        self.module = m
+        self._enter_nested_scope(m)
+        #m.parent = self.module
+        #self.module = m
         pass
 
     # Exit a parse tree produced by FloParser#compound_expression_filter.
@@ -302,7 +312,8 @@ class FloListenerImpl(FloListener):
         ))
         self.module.declare_output("output", output)
         filter = self.module
-        self.module = self.module.parent
+        #self.module = self.module.parent
+        self._exit_nested_scope()
         #self.module.declare_local(id, filter.outputs["output"])
         self.register[-1] = filter.outputs["output"]
 
@@ -637,16 +648,12 @@ class FloListenerImpl(FloListener):
         # print("-----------------", self.module)
         comp_name = ctx.children[1].getText()
         c = Component(comp_name)
-        c.parent = self.module
-        # print(">>>>>>>>>", c.__dict__)
-        self.module.declare_local(comp_name, c)
-        self.module = c
+        self._enter_nested_scope(c, comp_name)
 
     # Exit a parse tree produced by FloParser#component.
     def exitComponent(self, ctx:FloParser.ComponentContext):
         # print("exitComponent", ctx.children[1].getText())
-        self.module = self.module.parent
-        # print(self.module)
+        self._exit_nested_scope()
 
 
     # Enter a parse tree produced by FloParser#module.
@@ -655,17 +662,10 @@ class FloListenerImpl(FloListener):
         if mod_name == "main":
             return
         m = Module(mod_name)
-        m.parent = self.module
-        # print(">>>>>>>>>", c.__dict__)
-        self.module.declare_local(mod_name, m)
-        self.module = m
-        # TODO else....
+        self._enter_nested_scope(m, mod_name)
 
     # Exit a parse tree produced by FloParser#module.
     def exitModule(self, ctx:FloParser.ModuleContext):
         #print(self.module.locals, self.module.inputs, self.module.outputs)
-        if self.module.parent is not None:
-            nested_mod = self.module
-            self.module = self.module.parent
-            self.module.declare_local(nested_mod.name, nested_mod)
+        self._exit_nested_scope()
         
