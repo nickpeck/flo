@@ -164,9 +164,11 @@ class ParserTests(unittest.TestCase):
     def test_computed_addition_bind_to_output(self):
         src = """
             module main {
-                dec x : int
-                dec y : int
-                dec z : int = x+y
+                dec {
+                    x : int
+                    y : int
+                    z : int = x+y
+                }
                 z->stdout
                 x <- 8
                 y <- 9
@@ -178,8 +180,10 @@ class ParserTests(unittest.TestCase):
     def test_computed_feedback_loop(self):
         src = """
             module main {
-                dec x : int
-                dec y : int = x * x
+                dec {
+                    x : int
+                    y : int = x * x
+                }
                 y -> stdout
                 y -> x
                 x <- 2
@@ -192,9 +196,11 @@ class ParserTests(unittest.TestCase):
     def test_computed_feedback_loop_two_levels(self):
         src = """
             module main {
-                dec x : int
-                dec y : int = x * x
-                dec z : int = y * y
+                dec {
+                    x : int
+                    y : int = x * x
+                    z : int = y * y
+                }
                 z -> stdout
                 z -> x
                 x <- 2
@@ -220,8 +226,10 @@ class ParserTests(unittest.TestCase):
     def test_declare_filter(self):
         src = """
             module main {
-                dec x : int
-                dec z : int = x|x >= 5
+                dec {
+                    x : int
+                    z : int = x|x >= 5
+                }
                 z->stdout
                 x <- 0
                 x <- 5
@@ -237,11 +245,12 @@ class ParserTests(unittest.TestCase):
         src = """
             module main {
                 component adder {
-                    dec input x : int
-                    dec input y : int
-                    dec z : int = x+y
+                    dec {
+                        input x : int
+                        input y : int
+                        z : int = x+y
+                    }
                 }
-                
                 dec a : adder
                 a.z -> stdout
                 a.x <- 8

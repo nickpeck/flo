@@ -98,6 +98,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#declaration.
+    def enterDeclaration(self, ctx:FloParser.DeclarationContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#declaration.
+    def exitDeclaration(self, ctx:FloParser.DeclarationContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         pass

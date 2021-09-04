@@ -191,19 +191,19 @@ class FloListenerImpl(FloListener):
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
         # print("enterSimpleDeclaration", ["".join(c.getText()) for c in ctx.children])
-        if ctx.children[1].getText() == "output":
-            _type = ctx.children[4].getText()
-            id = ctx.children[2].getText()
+        if ctx.children[0].getText() == "output":
+            _type = ctx.children[3].getText()
+            id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
             self.module.declare_output(id, stream)
-        elif ctx.children[1].getText() == "input":
-            _type = ctx.children[4].getText()
-            id = ctx.children[2].getText()
+        elif ctx.children[0].getText() == "input":
+            _type = ctx.children[3].getText()
+            id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
             self.module.declare_input(id, stream)
         else:
-            _type = ctx.children[3].getText()
-            id = ctx.children[1].getText()
+            _type = ctx.children[2].getText()
+            id = ctx.children[0].getText()
             if _type in self.module.locals and isinstance(self.module.locals[_type], Component):
                 comp_instance = self.module.locals[_type]
                 self.module.declare_local(id, comp_instance)
@@ -242,12 +242,12 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#computedDeclaration.
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
-        if ctx.children[1].getText() == "output":
-            id = ctx.children[2].getText()
-        elif ctx.children[1].getText() == "input":
-            id = ctx.children[2].getText()
-        else:
+        if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
+        elif ctx.children[0].getText() == "input":
+            id = ctx.children[1].getText()
+        else:
+            id = ctx.children[0].getText()
         self.module.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#filterDeclaration.
@@ -256,12 +256,12 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#filterDeclaration.
     def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        if ctx.children[1].getText() == "output":
-            id = ctx.children[2].getText()
-        elif ctx.children[1].getText() == "input":
-            id = ctx.children[2].getText()
-        else:
+        if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
+        elif ctx.children[0].getText() == "input":
+            id = ctx.children[1].getText()
+        else:
+            id = ctx.children[0].getText()
         self.module.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.

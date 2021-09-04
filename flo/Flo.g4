@@ -67,10 +67,28 @@ import_statement:
 	| (FROM ID (DOT ID)* IMPORT (ID)*)
 	(AS ID)?;
 
-declaration: 
-	(DEC (INPUT|OUTPUT)? ID COLON ID) #simpleDeclaration
-	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression) #computedDeclaration
-	|(DEC (INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_filter) #filterDeclaration;
+
+simpleDeclaration:
+	((INPUT|OUTPUT)? ID COLON ID)
+;
+
+computedDeclaration:
+	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression)
+;
+
+filterDeclaration:
+	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_filter)
+;
+
+declaration:
+	DEC (
+        LCB (
+            simpleDeclaration
+            | computedDeclaration
+            | filterDeclaration
+        )+ RCB
+    | (simpleDeclaration | computedDeclaration | filterDeclaration)
+    );
 
 compound_expression_filter
 	:
