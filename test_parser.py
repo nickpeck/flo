@@ -279,12 +279,23 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["hello from inner!"]
 
-    def test_import_func_from_python_stdlib(self):
+    # def test_import_func_from_python_stdlib(self):
+        # src = """
+            # module main {
+                # import os.path
+                # path.splitext -> stdout
+                # path.splitext  <- ("test_file.txt",)
+            # }
+        # """
+        # main_module = FloListenerImpl.loadString(src, self.runtime)
+        # assert self.stdout == ['hello imported module!']
+
+    def test_import_func_from_local_module(self):
         src = """
             module main {
                 import testimport
-                testimport.myfunc_output -> stdout
-                testimport.myfunc_input <- ("hello","imported module!")
+                testimport.myfunc -> stdout
+                testimport.myfunc <- ("hello","imported module!")
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)

@@ -158,3 +158,23 @@ class AsyncStream(Generic[T]):
         for dep in dependants:
             await dep.subscribe(subscriber)
         return output_stream
+
+class ComputedMapped(AsyncStream):
+    def __init__(self,
+        head=None, dependants=None,
+        expr: Callable[[T], Any] = lambda x : x):
+        super().__init__(head, dependants)
+        self.expr = expr
+
+    async def write(self, item: T) -> AsyncStream[T]:
+        """Write a new value to this stream, and await the
+        notification of all subscribers.
+        """
+        self._v = self.expr(item)
+        _head = self._v
+
+        if self._subscribers != []:
+            await asyncio.wait(
+                [s.on_next(_head)
+                    for s in self._subscribers])
+        return self

@@ -10,7 +10,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . stream import AsyncStream, Subscriber
+from . stream import AsyncStream, Subscriber, ComputedMapped
 
 class FloListenerImpl(FloListener):
     """
@@ -149,18 +149,20 @@ class FloListenerImpl(FloListener):
             # https://docs.python.org/3/library/inspect.html
             c = Component(libname)
             for name, obj in inspect.getmembers(imported):
-                def _wrap_py_func(f):
-                    i_s = AsyncStream()
-                    o_s = asyncio.run(AsyncStream.computed(
-                        lambda *_input: obj(*_input), # type: ignore
-                        [i_s]
-                    ))
-                    return i_s, o_s
+                # def _wrap_py_func(f):
+                    # i_s = AsyncStream()
+                    # o_s = asyncio.run(AsyncStream.computed(
+                        # lambda *_input: obj(*_input), # type: ignore
+                        # [i_s]
+                    # ))
+                    # return i_s, o_s
 
                 if inspect.ismethod(obj) or inspect.isfunction(obj):
-                    input_stream, output_stream = _wrap_py_func(obj)
-                    c.declare_input(name+"_input", input_stream)
-                    c.declare_output(name+"_output", output_stream)
+                    wrapper_stream = ComputedMapped(None, None, lambda x: obj(x)) # type: ignore
+                    c.declare_input(name, wrapper_stream)
+                    # input_stream, output_stream = _wrap_py_func(obj)
+                    # c.declare_input(name+"_input", input_stream)
+                    # c.declare_output(name+"_output", output_stream)
             self.module.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.
