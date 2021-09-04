@@ -143,7 +143,6 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#import_statement.
     def enterImport_statement(self, ctx:FloParser.Import_statementContext):
-        #print([c.getText() for c in ctx.children])
         self.isGetAttrib = True
         # POC simple import only for now!
         if len(ctx.children) == 2:
@@ -152,21 +151,10 @@ class FloListenerImpl(FloListener):
             # https://docs.python.org/3/library/inspect.html
             c = Component(libname)
             for name, obj in inspect.getmembers(imported):
-                #print(name, obj)
-                # def _wrap_py_func(f):
-                    # i_s = AsyncStream()
-                    # o_s = asyncio.run(AsyncStream.computed(
-                        # lambda *_input: obj(*_input), # type: ignore
-                        # [i_s]
-                    # ))
-                    # return i_s, o_s
-
                 if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
                     wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
                     c.declare_input(name, wrapper_stream)
-                    # input_stream, output_stream = _wrap_py_func(obj)
-                    # c.declare_input(name+"_input", input_stream)
-                    # c.declare_output(name+"_output", output_stream)
+
             self.module.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.

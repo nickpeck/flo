@@ -43,7 +43,7 @@ COMPONENT: 'component';
 NEW: 'new';
 INPUT: 'input';
 OUTPUT: 'output';
-IMPORT: 'import';
+IMPORT: 'uses';
 FROM: 'from';
 AS: 'as';
 

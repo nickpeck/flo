@@ -282,7 +282,7 @@ class ParserTests(unittest.TestCase):
     def test_import_func_from_python_stdlib(self):
         src = """
             module main {
-                import math
+                uses math
                 math.ceil -> stdout
                 math.ceil  <- 1.75
             }
@@ -293,7 +293,7 @@ class ParserTests(unittest.TestCase):
     def test_import_func_from_local_module(self):
         src = """
             module main {
-                import testimport
+                uses testimport
                 testimport.myfunc -> stdout
                 testimport.myfunc <- ("hello","imported module!")
             }

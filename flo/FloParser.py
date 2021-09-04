@@ -138,7 +138,7 @@ class FloParser ( Parser ):
                      "'=='", "'>'", "'<'", "'>='", "'<='", "'!'", "'->'", 
                      "'<-'", "'.'", "':'", "'or'", "'and'", "'{'", "'}'", 
                      "'('", "')'", "','", "'dec'", "'module'", "'component'", 
-                     "'new'", "'input'", "'output'", "'import'", "'from'", 
+                     "'new'", "'input'", "'output'", "'uses'", "'from'", 
                      "'as'", "<INVALID>", "<INVALID>", "<INVALID>", "' '" ]
 
     symbolicNames = [ "<INVALID>", "CR", "COMMENT", "LINE_COMMENT", "WHITESPACE", 
