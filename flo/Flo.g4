@@ -7,7 +7,7 @@ LINE_COMMENT
     : '//' ~('\n'|'\r')* '\r'? '\n' -> channel(HIDDEN);
 WHITESPACE : ( '\t' | ' ' | '\r' | CR| '\u000C' )+ -> channel(HIDDEN);
 //all numbers are represented by a single 'num' type in the grammar:
-NUMBER:[0-9]+;
+NUMBER:[0-9]+(.[0-9]+)?;
 
 //operators;
 PLUS	:	'+';

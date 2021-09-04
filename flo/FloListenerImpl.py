@@ -53,7 +53,10 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#number.
     def enterNumber(self, ctx:FloParser.NumberContext):
-        value = int(ctx.children[0].getText())
+        try:
+            value = int(ctx.children[0].getText())
+        except ValueError:
+            value = float(ctx.children[0].getText()) # type: ignore
         self.register.append(value)
 
     # Exit a parse tree produced by FloParser#number.
@@ -149,6 +152,7 @@ class FloListenerImpl(FloListener):
             # https://docs.python.org/3/library/inspect.html
             c = Component(libname)
             for name, obj in inspect.getmembers(imported):
+                #print(name, obj)
                 # def _wrap_py_func(f):
                     # i_s = AsyncStream()
                     # o_s = asyncio.run(AsyncStream.computed(
@@ -157,8 +161,8 @@ class FloListenerImpl(FloListener):
                     # ))
                     # return i_s, o_s
 
-                if inspect.ismethod(obj) or inspect.isfunction(obj):
-                    wrapper_stream = ComputedMapped(None, None, lambda x: obj(x)) # type: ignore
+                if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
+                    wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
                     c.declare_input(name, wrapper_stream)
                     # input_stream, output_stream = _wrap_py_func(obj)
                     # c.declare_input(name+"_input", input_stream)

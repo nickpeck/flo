@@ -279,16 +279,16 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["hello from inner!"]
 
-    # def test_import_func_from_python_stdlib(self):
-        # src = """
-            # module main {
-                # import os.path
-                # path.splitext -> stdout
-                # path.splitext  <- ("test_file.txt",)
-            # }
-        # """
-        # main_module = FloListenerImpl.loadString(src, self.runtime)
-        # assert self.stdout == ['hello imported module!']
+    def test_import_func_from_python_stdlib(self):
+        src = """
+            module main {
+                import math
+                math.ceil -> stdout
+                math.ceil  <- 1.75
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['2']
 
     def test_import_func_from_local_module(self):
         src = """
@@ -300,6 +300,6 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['hello imported module!']
-        
+
 if __name__ == "__main__":
     unittest.main()
