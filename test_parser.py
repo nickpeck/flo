@@ -221,7 +221,7 @@ class ParserTests(unittest.TestCase):
         src = """
             module main {
                 dec x : int
-                dec z : int = {x: x >= 5}
+                dec z : int = x|x >= 5
                 z->stdout
                 x <- 0
                 x <- 5

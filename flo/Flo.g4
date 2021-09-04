@@ -28,6 +28,7 @@ DOT :      '.';
 COLON: ':';
 OR: 'or';
 AND: 'and';
+FILTER: '|';
 
 //punctuation
 LCB     :       '{';
@@ -73,7 +74,7 @@ declaration:
 
 compound_expression_filter
 	:
-		LCB ID COLON compound_expression_comparison RCB
+		ID FILTER compound_expression_comparison
 	;
 
 compound_expression_not

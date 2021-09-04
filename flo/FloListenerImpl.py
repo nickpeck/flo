@@ -267,7 +267,7 @@ class FloListenerImpl(FloListener):
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         # so given {x : x<5} we declare a hidden module where x is the only local
-        id = ctx.children[1].getText()
+        id = ctx.children[0].getText()
         # TODO better way to do this, using magic methods?
         try:
             var = self.module.locals[id]
@@ -283,7 +283,7 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression_filter.
     def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
-        id = ctx.children[1].getText()
+        id = ctx.children[0].getText()
         output = AsyncStream[Any]()
         input = self.module.inputs[id]
         async def f(truthy):
