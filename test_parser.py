@@ -173,7 +173,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["('42', 'Hello world', 'True')"]
+        assert self.stdout == ["(42, 'Hello world', True)"]
 
     def test_computed_addition_bind_to_output(self):
         src = """

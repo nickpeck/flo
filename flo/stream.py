@@ -37,6 +37,10 @@ class AsyncStream(Generic[T]):
             self._dependants = []
         else:
             self._dependants = dependants
+        child_dependants = []
+        for dep in self._dependants:
+            child_dependants = child_dependants + dep._dependants
+        self._dependants = self._dependants + child_dependants
 
     def __str__(self):
         return "<AsyncStream {}>".format(self._v)
