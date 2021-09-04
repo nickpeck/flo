@@ -39,7 +39,10 @@ class AsyncStream(Generic[T]):
             self._dependants = dependants
         child_dependants = []
         for dep in self._dependants:
-            child_dependants = child_dependants + dep._dependants
+            try:
+                child_dependants = child_dependants + dep._dependants
+            except AttributeError:
+                pass
         self._dependants = self._dependants + child_dependants
 
     def __str__(self):
