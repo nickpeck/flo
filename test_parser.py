@@ -161,6 +161,20 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["50.0", "90.0", "90.0", "90.0", "45.0"]
 
+    def test_declare_vars(self):
+        src = """
+            module main {
+                dec {
+                    MEANING_OF_LIFE : int = 42
+                    greeting : str = "Hello world"
+                    truthy : bool = true
+                }
+                stdout <- (MEANING_OF_LIFE, greeting, truthy)
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["('42', 'Hello world', 'True')"]
+
     def test_computed_addition_bind_to_output(self):
         src = """
             module main {

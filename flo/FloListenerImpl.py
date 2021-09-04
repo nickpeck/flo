@@ -190,7 +190,7 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
-        # print("enterSimpleDeclaration", ["".join(c.getText()) for c in ctx.children])
+        #print("enterSimpleDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
@@ -242,6 +242,7 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#computedDeclaration.
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
+        #print("exitComputedDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
         elif ctx.children[0].getText() == "input":
@@ -249,6 +250,7 @@ class FloListenerImpl(FloListener):
         else:
             id = ctx.children[0].getText()
         self.module.declare_local(id, self.register[0])
+        self.register = self.register[1:]
 
     # # Enter a parse tree produced by FloParser#filterDeclaration.
     def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
@@ -256,6 +258,7 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#filterDeclaration.
     def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
+        #print("exitFilterDeclaration", ["".join(c.getText()) for c in ctx.children])
         if ctx.children[0].getText() == "output":
             id = ctx.children[1].getText()
         elif ctx.children[0].getText() == "input":
