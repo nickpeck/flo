@@ -13,12 +13,18 @@ class AsyncManager:
             AsyncManager.__instance__ = AsyncManager()
         return AsyncManager.__instance__
 
+    @staticmethod
+    def renew():
+        AsyncManager.__instance__ = AsyncManager()
+        return AsyncManager.__instance__
+
     def __init__(self):
-        self.loop = asyncio.get_event_loop()
+        #self.loop = asyncio.get_event_loop()
         self.funcs = []
 
     def add_async_func(self, task, arg):
         #task,args = self.loop.create_task(coro)
+        #print("ADDING TASK", task, arg)
         self.funcs.append((task,arg))
         # https://stackoverflow.com/questions/51116849/asyncio-await-coroutine-more-than-once-periodic-tasks
         
@@ -27,12 +33,21 @@ class AsyncManager:
                 # await _async_func(*args)
         # self.loop.create_task(wrapper(task, args))
 
-    def run(self):
+    async def run(self):
+        #print("STARTING RUN", len(self.funcs))
+        #import pprint
+        #pprint.pprint(self.funcs, indent=4)
         tasks = []
-        for f, arg in self.funcs:
-            tasks.append(self.loop.create_task(f(arg)))
-        print("....................", tasks)
-        f = self.loop.run_until_complete(asyncio.wait(tasks))
+        while len(self.funcs) > 0:
+            #for f, arg in self.funcs:
+            #print("#", len(self.funcs))
+            f, arg = self.funcs.pop(0)
+            #print("!", len(self.funcs))
+            #tasks.append(self.loop.create_task(f(arg)))
+            await asyncio.create_task(f(arg))
+            #pprint.pprint(self.funcs, indent=4)
+        #self.loop.run_until_complete(asyncio.wait(tasks))
+        #print("ENDING RUN", len(self.funcs))
 
 T = TypeVar('T')
 
@@ -134,7 +149,7 @@ class AsyncStream(Generic[T]):
         s2 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        self.subscribe(s2)
+        other.subscribe(s2)
         #await other.subscribe(s2)
         return joined
 
@@ -143,10 +158,10 @@ class AsyncStream(Generic[T]):
         stream, filtered through expr.
         """
         filtered_stream = AsyncStream[T]()
-        async def _next(head: T):
+        def _next(head: T):
             truthy = expr(head)
             if truthy:
-                await filtered_stream.write(head)
+                filtered_stream.write(head)
         subscriber = Subscriber(
             on_next = _next
         )

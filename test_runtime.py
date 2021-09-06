@@ -8,7 +8,7 @@ class RuntimeTests(unittest.TestCase):
 
     def test_setup_active_runtime(self):
         async def _test():
-            ar = await runtime.setup_default_runtime()
+            ar = runtime.setup_default_runtime()
             return ar
 
         #loop = asyncio.get_event_loop()
@@ -68,3 +68,6 @@ class ComponentTests(unittest.TestCase):
         with self.assertRaises(Exception) as e:
             comp2 = comp.duplicate(z=5)
         assert e.exception.args == ("<Component 'mycomp'> has no local attr 'z'",)
+
+if __name__ == "__main__":
+    unittest.main()

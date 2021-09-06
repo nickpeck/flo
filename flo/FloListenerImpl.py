@@ -37,7 +37,7 @@ class FloListenerImpl(FloListener):
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         #print("TASKS", AsyncManager.get_instance().funcs)
-        AsyncManager.get_instance().run()
+        asyncio.run(AsyncManager.get_instance().run())
         return listener
 
     def __init__(self, main_module=None):
@@ -48,8 +48,8 @@ class FloListenerImpl(FloListener):
         else:
             self.scope = main_module
         self._is_get_attrib = False
-        loop = asyncio.get_event_loop()
-        tasks = []
+        #loop = asyncio.get_event_loop()
+        #tasks = []
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope

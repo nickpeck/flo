@@ -2,7 +2,7 @@ import asyncio
 from typing import Any
 import unittest
 
-from flo import AsyncStream, Subscriber, Module
+from flo import AsyncStream, Subscriber, Module, AsyncManager
 from flo.FloListenerImpl import FloListenerImpl
 
 class ParserTests(unittest.TestCase):
@@ -11,6 +11,10 @@ class ParserTests(unittest.TestCase):
         self.stdout = []
         self.stderr = []
         self.runtime = self._setup_default_runtime()
+        AsyncManager.get_instance()
+
+    def tearDown(self):
+        AsyncManager.renew()
 
     def _setup_default_runtime(self):
         def _unwrap(i):
@@ -303,7 +307,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        print(self.stdout)
+        #print(self.stdout)
         assert self.stdout == ['17']
 
     def test_nested_modules1(self):
