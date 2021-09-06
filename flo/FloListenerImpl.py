@@ -10,7 +10,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . stream import AsyncStream, Subscriber, ComputedMapped
+from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager
 
 class FloListenerImpl(FloListener):
     """
@@ -36,16 +36,20 @@ class FloListenerImpl(FloListener):
         listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
+        #print("TASKS", AsyncManager.get_instance().funcs)
+        AsyncManager.get_instance().run()
         return listener
 
     def __init__(self, main_module=None):
         super().__init__()
         self.register = []
         if main_module is None:
-            self.scope = asyncio.run(setup_default_runtime())
+            self.scope = setup_default_runtime()
         else:
             self.scope = main_module
         self._is_get_attrib = False
+        loop = asyncio.get_event_loop()
+        tasks = []
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope
@@ -66,10 +70,10 @@ class FloListenerImpl(FloListener):
                 self.register.append(func(right_expr))
                 return
             # otherwise, set up a computed to represent all future states
-            computed = asyncio.run(AsyncStream.computed(
+            computed = AsyncStream.computed(
                 func, # type: ignore
                 [right_expr]
-            ))
+            )
         elif len(deps) == 2:
             # binary forms... 'x + y' 'x >= y'
             left_expr = deps[0]
@@ -83,10 +87,10 @@ class FloListenerImpl(FloListener):
                 left_expr = AsyncStream(left_expr)
             if not isinstance(right_expr, AsyncStream):
                 right_expr = AsyncStream(right_expr)
-            computed = asyncio.run(AsyncStream.computed(
+            computed = AsyncStream.computed(
                 func, # type: ignore
                 [left_expr, right_expr]
-            ))
+            )
         self.register = self.register[:-len(deps)]
         self.register.append(computed)
 
@@ -223,17 +227,17 @@ class FloListenerImpl(FloListener):
         id = ctx.children[0].getText()
         output = AsyncStream[Any]()
         input = self.scope.get_member(id)
-        async def f(truthy):
+        def f(truthy):
             nonlocal output
             nonlocal input
             if truthy:
-                await output.write(input.peek())
+                output.write(input.peek())
         computed_expr = self.register[-1]
-        asyncio.run(computed_expr.subscribe(
+        computed_expr.subscribe(
             Subscriber(
                 on_next = f
             )
-        ))
+        )
         self.scope.declare_output("output", output)
         filter = self.scope
         self._exit_nested_scope()
@@ -244,7 +248,7 @@ class FloListenerImpl(FloListener):
         left = self.register[-2]
         right = self.register[-1]
         self.register = self.register[:-2]
-        joined = asyncio.run(left.joinTo(right))
+        joined = left.joinTo(right)
         self.register.append(joined)
 
     # Exit a parse tree produced by FloParser#compound_expression_comparison.
@@ -329,7 +333,8 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression_putvalue.
     def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
         if len(ctx.children) == 3:
-            asyncio.run(self.register[0].write(self.register[1]))
+            self.register[0].write(self.register[1])
+            #asyncio.run(self.register[0].write(self.register[1]))
             self.register = []
         pass
 
@@ -344,7 +349,8 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) == 3:
-            asyncio.run(self.register[0].bindTo(self.register[1]))
+            self.register[0].bindTo(self.register[1])
+            #asyncio.run(self.register[0].bindTo(self.register[1]))
             self.register = []
         pass
 

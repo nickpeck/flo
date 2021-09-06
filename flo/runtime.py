@@ -70,21 +70,21 @@ class Runtime(Subscriber[str]):
         # TODO react to value, terminate, restart etc
         pass
 
-async def setup_default_runtime():
+def setup_default_runtime():
     active_runtime = AsyncStream[str]
 
     _builtin_stdout = AsyncStream[Any]()
-    await _builtin_stdout.subscribe(
+    _builtin_stdout.subscribe(
         Subscriber[str](
             on_next = lambda s : sys.stdout.write(str(s))))
 
     _builtin_stderr = AsyncStream[Any]()
-    await _builtin_stderr.subscribe(
+    _builtin_stderr.subscribe(
         Subscriber[str](
             on_next = lambda s : sys.stderr.write(str(s))))
 
     _builtin_runtime = AsyncStream[str]()
-    await _builtin_runtime.subscribe(active_runtime)
+    _builtin_runtime.subscribe(active_runtime)
 
     __main_module__ = Module("main", **{
         "stdout" : _builtin_stdout,

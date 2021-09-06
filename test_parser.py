@@ -10,9 +10,9 @@ class ParserTests(unittest.TestCase):
     def setUp(self):
         self.stdout = []
         self.stderr = []
-        self.runtime = asyncio.run(self._setup_default_runtime())
+        self.runtime = self._setup_default_runtime()
 
-    async def _setup_default_runtime(self):
+    def _setup_default_runtime(self):
         def _unwrap(i):
             while isinstance(i, AsyncStream):
                 i = i.peek()
@@ -21,17 +21,17 @@ class ParserTests(unittest.TestCase):
         active_runtime = AsyncStream[str]
 
         _builtin_stdout = AsyncStream[Any]()
-        await _builtin_stdout.subscribe(
+        _builtin_stdout.subscribe(
             Subscriber[str](
                 on_next = lambda s : self.stdout.append(_unwrap(s))))
 
         _builtin_stderr = AsyncStream[Any]()
-        await _builtin_stderr.subscribe(
+        _builtin_stderr.subscribe(
             Subscriber[str](
                 on_next = lambda s : self.stderr.append(_unwrap(s))))
 
         _builtin_runtime = AsyncStream[str]()
-        await _builtin_runtime.subscribe(active_runtime)
+        _builtin_runtime.subscribe(active_runtime)
 
         __main_module__ = Module("main", **{
             "stdout" : _builtin_stdout,
@@ -303,6 +303,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
+        print(self.stdout)
         assert self.stdout == ['17']
 
     def test_nested_modules1(self):

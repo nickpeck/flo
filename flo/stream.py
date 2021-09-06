@@ -5,6 +5,35 @@ from functools import wraps
 from typing import TypeVar, Generic, Callable, Optional, List, Coroutine, Any
 import traceback
 
+class AsyncManager:
+    __instance__ = None
+    @staticmethod
+    def get_instance():
+        if AsyncManager.__instance__ is None:
+            AsyncManager.__instance__ = AsyncManager()
+        return AsyncManager.__instance__
+
+    def __init__(self):
+        self.loop = asyncio.get_event_loop()
+        self.funcs = []
+
+    def add_async_func(self, task, arg):
+        #task,args = self.loop.create_task(coro)
+        self.funcs.append((task,arg))
+        # https://stackoverflow.com/questions/51116849/asyncio-await-coroutine-more-than-once-periodic-tasks
+        
+        # async def wrapper(_async_func, args):
+            # while True:
+                # await _async_func(*args)
+        # self.loop.create_task(wrapper(task, args))
+
+    def run(self):
+        tasks = []
+        for f, arg in self.funcs:
+            tasks.append(self.loop.create_task(f(arg)))
+        print("....................", tasks)
+        f = self.loop.run_until_complete(asyncio.wait(tasks))
+
 T = TypeVar('T')
 
 class Subscriber(Generic[T]):
@@ -51,7 +80,7 @@ class AsyncStream(Generic[T]):
     def __repr__(self):
         return str(self)
 
-    async def subscribe(self, subscriber: Subscriber[T]) -> AsyncStream[T]:
+    def subscribe(self, subscriber: Subscriber[T]) -> AsyncStream[T]:
         """Add a new subscriber and return the stream.
         If the subscriber is already added,
         then silently return. If this stream has a value, 
@@ -61,7 +90,9 @@ class AsyncStream(Generic[T]):
             return self
         self._subscribers.append(subscriber)
         if self._v is not None:
-            await subscriber.on_next(self._v)
+            AsyncManager.get_instance().add_async_func(
+                subscriber.on_next, self._v)
+            #await subscriber.on_next(self._v)
         return self
 
     def peek(self) -> Optional[T]:
@@ -70,7 +101,7 @@ class AsyncStream(Generic[T]):
         """
         return self._v
 
-    async def bindTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
+    def bindTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
         """Create a binding between this stream, and another stream
         of a similar type, so that the other is subscribed to events
         in this stream. Return the initial stream.
@@ -83,10 +114,10 @@ class AsyncStream(Generic[T]):
         s = Subscriber[T](
             on_next = lambda head: other.write(head)
         )
-        await self.subscribe(s)
+        self.subscribe(s)
         return other
 
-    async def joinTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
+    def joinTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
         """Join this stream to another stream of the same type.
         The result is a new stream that recieves events from both
         source streams.
@@ -98,14 +129,16 @@ class AsyncStream(Generic[T]):
         s1 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        await self.subscribe(s1)
+        self.subscribe(s1)
+        #await self.subscribe(s1)
         s2 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        await other.subscribe(s2)
+        self.subscribe(s2)
+        #await other.subscribe(s2)
         return joined
 
-    async def filter(self, expr: Callable[[T], bool]) -> AsyncStream[T]:
+    def filter(self, expr: Callable[[T], bool]) -> AsyncStream[T]:
         """Return a new stream that contains events in the source
         stream, filtered through expr.
         """
@@ -117,10 +150,11 @@ class AsyncStream(Generic[T]):
         subscriber = Subscriber(
             on_next = _next
         )
-        await self.subscribe(subscriber)
+        self.subscribe(subscriber)
+        #await self.subscribe(subscriber)
         return filtered_stream
 
-    async def write(self, item: T) -> AsyncStream[T]:
+    def write(self, item: T) -> AsyncStream[T]:
         """Write a new value to this stream, and await the
         notification of all subscribers.
         """
@@ -128,13 +162,13 @@ class AsyncStream(Generic[T]):
         _head = self._v
 
         if self._subscribers != []:
-            await asyncio.wait(
-                [s.on_next(_head)
-                    for s in self._subscribers])
+            for s in self._subscribers:
+                AsyncManager.get_instance().add_async_func(
+                    s.on_next, _head)
         return self
 
     @staticmethod
-    async def computed(func: Callable[[List[AsyncStream[T]]], T],
+    def computed(func: Callable[[List[AsyncStream[T]]], T],
         dependants: List[AsyncStream[T]]) -> AsyncStream[T]:
         """Create a new stream that is based on a computed
         expression of dependent streams, so that when any of dependents
@@ -150,20 +184,20 @@ class AsyncStream(Generic[T]):
 
         output_stream = AsyncStream[T](None, dependants)
         bound_func = _bind(func, *dependants)
-        async def _on_next(x):
+        def _on_next(x):
             nonlocal bound_func
             nonlocal output_stream
             nonlocal dependants
             if None in [dep.peek() for dep in dependants]:
                 return
-            await output_stream.write(bound_func())
+            output_stream.write(bound_func())
 
         subscriber = Subscriber[T](
             on_next= _on_next
         )
 
         for dep in dependants:
-            await dep.subscribe(subscriber)
+            dep.subscribe(subscriber)
         return output_stream
 
 class ComputedMapped(AsyncStream):
@@ -173,7 +207,7 @@ class ComputedMapped(AsyncStream):
         super().__init__(head, dependants)
         self.func = func
 
-    async def write(self, item: T) -> AsyncStream[T]:
+    def write(self, item: T) -> AsyncStream[T]:
         """Write a new value to this stream, and await the
         notification of all subscribers.
         """
@@ -181,7 +215,7 @@ class ComputedMapped(AsyncStream):
         _head = self._v
 
         if self._subscribers != []:
-            await asyncio.wait(
-                [s.on_next(_head)
-                    for s in self._subscribers])
+            for s in self._subscribers:
+                AsyncManager.get_instance().add_async_func(
+                    s.on_next, _head)
         return self
