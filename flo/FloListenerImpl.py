@@ -37,7 +37,7 @@ class FloListenerImpl(FloListener):
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         #print("TASKS", AsyncManager.get_instance().funcs)
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         return listener
 
     def __init__(self, main_module=None):
@@ -335,6 +335,7 @@ class FloListenerImpl(FloListener):
         if len(ctx.children) == 3:
             self.register[0].write(self.register[1])
             #asyncio.run(self.register[0].write(self.register[1]))
+            AsyncManager.get_instance().run()
             self.register = []
         pass
 

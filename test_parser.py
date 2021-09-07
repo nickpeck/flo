@@ -307,7 +307,6 @@ class ParserTests(unittest.TestCase):
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        #print(self.stdout)
         assert self.stdout == ['17']
 
     def test_nested_modules1(self):

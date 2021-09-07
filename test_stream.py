@@ -24,7 +24,7 @@ class AsyncStreamTests(unittest.TestCase):
             on_next = lambda i : _callback(i)
         )
         stream.subscribe(subscriber)
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         assert subscriber_called_with == 10
 
     def test_stream_peek(self):
@@ -37,7 +37,7 @@ class AsyncStreamTests(unittest.TestCase):
         stream2 = AsyncStream[int]()
         stream1.bindTo(stream2)
         stream1.write(10)
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         result = stream2.peek()
 
         assert result == 10
@@ -68,7 +68,7 @@ class AsyncStreamTests(unittest.TestCase):
 
         stream1.write("hello")
         stream2.write("world")
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         result = subscriber_called_with
         assert result == ["hello", "world"]
 
@@ -93,7 +93,7 @@ class AsyncStreamTests(unittest.TestCase):
 
         for i in range(10):
             stream1.write(i)
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         result = subscriber_called_with
         assert result == [6,7,8,9]
 
@@ -109,7 +109,7 @@ class AsyncStreamTests(unittest.TestCase):
         stream1.write(2)
         stream1.write(5)
         stream2.write(6)
-        asyncio.run(AsyncManager.get_instance().run())
+        AsyncManager.get_instance().run()
         result = stream3.peek()
         # nb the result is only that of the last 'state' (5 + 6)
         assert result == 11

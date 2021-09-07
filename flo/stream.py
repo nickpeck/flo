@@ -15,11 +15,13 @@ class AsyncManager:
 
     @staticmethod
     def renew():
+        if AsyncManager.__instance__ is not None:
+            AsyncManager.__instance__.loop.close()
         AsyncManager.__instance__ = AsyncManager()
         return AsyncManager.__instance__
 
     def __init__(self):
-        #self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop();
         self.funcs = []
 
     def add_async_func(self, task, arg):
@@ -33,20 +35,22 @@ class AsyncManager:
                 # await _async_func(*args)
         # self.loop.create_task(wrapper(task, args))
 
-    async def run(self):
+    def run(self):
         #print("STARTING RUN", len(self.funcs))
         #import pprint
         #pprint.pprint(self.funcs, indent=4)
         tasks = []
         while len(self.funcs) > 0:
-            #for f, arg in self.funcs:
-            #print("#", len(self.funcs))
-            f, arg = self.funcs.pop(0)
-            #print("!", len(self.funcs))
-            #tasks.append(self.loop.create_task(f(arg)))
-            await asyncio.create_task(f(arg))
-            #pprint.pprint(self.funcs, indent=4)
-        #self.loop.run_until_complete(asyncio.wait(tasks))
+            while len(self.funcs) > 0:
+                #pprint.pprint(self.funcs, indent=4)
+                #for f, arg in self.funcs:
+                #print("#", len(self.funcs))
+                f, arg = self.funcs.pop(0)
+                #print("!", len(self.funcs))
+                tasks.append(self.loop.create_task(f(arg)))
+                #await asyncio.create_task(f(arg))
+
+            self.loop.run_until_complete(asyncio.wait(tasks))
         #print("ENDING RUN", len(self.funcs))
 
 T = TypeVar('T')
@@ -163,7 +167,7 @@ class AsyncStream(Generic[T]):
             if truthy:
                 filtered_stream.write(head)
         subscriber = Subscriber(
-            on_next = _next
+            on_next = lambda x: _next(x)
         )
         self.subscribe(subscriber)
         #await self.subscribe(subscriber)
