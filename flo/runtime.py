@@ -20,13 +20,9 @@ class Module:
         self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
 
-    def declare_input(self, name: str, pipe: AsyncStream):
+    def declare_public(self, name: str, pipe: AsyncStream):
         self._check_is_not_defined(name)
-        self.locals[name] = ("input", pipe)
-
-    def declare_output(self, name: str, pipe: AsyncStream):
-        self._check_is_not_defined(name)
-        self.locals[name] =("output", pipe)
+        self.locals[name] = ("public", pipe)
 
     def get_member(self, name):
         return self.locals[name][1]
@@ -58,7 +54,7 @@ class Component(Module):
 class Filter(Module):
     def __init__(self, name, input_stream: AsyncStream):
         super().__init__("Anonymous Filter on '{}'".format(name))
-        self.declare_input(name, input_stream)
+        self.declare_public(name, input_stream)
 
 
 class Runtime(Subscriber[str]):

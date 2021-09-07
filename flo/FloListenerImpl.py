@@ -152,7 +152,7 @@ class FloListenerImpl(FloListener):
             for name, obj in inspect.getmembers(imported):
                 if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
                     wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
-                    c.declare_input(name, wrapper_stream)
+                    c.declare_public(name, wrapper_stream)
             self.scope.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.
@@ -161,16 +161,11 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
-        if ctx.children[0].getText() == "output":
+        if ctx.children[0].getText() == "public":
             _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
-            self.scope.declare_output(id, stream)
-        elif ctx.children[0].getText() == "input":
-            _type = ctx.children[3].getText()
-            id = ctx.children[1].getText()
-            stream = AsyncStream[_type]() # type: ignore
-            self.scope.declare_input(id, stream)
+            self.scope.declare_public(id, stream)
         else:
             _type = ctx.children[2].getText()
             id = ctx.children[0].getText()
@@ -183,34 +178,31 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#computedDeclaration.
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
-        if ctx.children[0].getText() == "output":
+        if ctx.children[0].getText() == "public":
             id = ctx.children[1].getText()
-        elif ctx.children[0].getText() == "input":
-            id = ctx.children[1].getText()
+            self.scope.declare_public(id, self.register[0])
         else:
             id = ctx.children[0].getText()
-        self.scope.declare_local(id, self.register[0])
+            self.scope.declare_local(id, self.register[0])
         self.register = self.register[1:]
 
     # Exit a parse tree produced by FloParser#filterDeclaration.
     def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
-        if ctx.children[0].getText() == "output":
+        if ctx.children[0].getText() == "public":
             id = ctx.children[1].getText()
-        elif ctx.children[0].getText() == "input":
-            id = ctx.children[1].getText()
+            self.scope.declare_public(id, self.register[0])
         else:
             id = ctx.children[0].getText()
-        self.scope.declare_local(id, self.register[0])
+            self.scope.declare_local(id, self.register[0])
 
     # Exit a parse tree produced by FloParser#joinDeclaration.
     def exitJoinDeclaration(self, ctx:FloParser.JoinDeclarationContext):
-        if ctx.children[0].getText() == "output":
+        if ctx.children[0].getText() == "public":
             id = ctx.children[1].getText()
-        elif ctx.children[0].getText() == "input":
-            id = ctx.children[1].getText()
+            self.scope.declare_public(id, self.register[0])
         else:
             id = ctx.children[0].getText()
-        self.scope.declare_local(id, self.register[0])
+            self.scope.declare_local(id, self.register[0])
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
@@ -236,7 +228,7 @@ class FloListenerImpl(FloListener):
                 on_next = f
             )
         )
-        self.scope.declare_output("output", output)
+        self.scope.declare_public("output", output)
         filter = self.scope
         self._exit_nested_scope()
         self.register[-1] = filter.get_member("output")

@@ -43,8 +43,7 @@ DEC : 'dec';
 MODULE: 'module';
 COMPONENT: 'component';
 NEW: 'new';
-INPUT: 'input';
-OUTPUT: 'output';
+PUBLIC: 'public';
 IMPORT: 'uses';
 FROM: 'from';
 AS: 'as';
@@ -71,19 +70,19 @@ import_statement:
 
 
 simpleDeclaration:
-	((INPUT|OUTPUT)? ID COLON ID)
+	((PUBLIC)? ID COLON ID)
 ;
 
 computedDeclaration:
-	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression)
+	((PUBLIC)? ID COLON ID EQUALS compound_expression)
 ;
 
 filterDeclaration:
-	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_filter)
+	((PUBLIC)? ID COLON ID EQUALS compound_expression_filter)
 ;
 
 joinDeclaration:
-	((INPUT|OUTPUT)? ID COLON ID EQUALS compound_expression_join)
+	((PUBLIC)? ID COLON ID EQUALS compound_expression_join)
 ;
 
 declaration:

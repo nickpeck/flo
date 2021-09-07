@@ -192,7 +192,7 @@ class ParserTests(unittest.TestCase):
             main_module = FloListenerImpl.loadString(src, self.runtime)
         assert e.exception.args == ("Variable 'x' is already defined",)
 
-    def test_computed_addition_bind_to_output(self):
+    def test_computed_addition_bind_to_public(self):
         src = """
             module main {
                 dec {
@@ -210,7 +210,7 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['17']
 
-    def test_computed_addition_bind_to_output_async(self):
+    def test_computed_addition_bind_to_public_async(self):
         src = """
             module main {
                 dec {
@@ -318,8 +318,8 @@ class ParserTests(unittest.TestCase):
             module main {
                 component adder {
                     dec {
-                        input x : int
-                        input y : int
+                        public x : int
+                        public y : int
                         z : int = x+y
                     }
                 }
@@ -338,7 +338,7 @@ class ParserTests(unittest.TestCase):
         src = """
             module main {
                 module inner {
-                    dec output x : str
+                    dec public x : str
                     x <- "hello from inner!"
                 }
                 stdout <- inner.x
@@ -352,7 +352,7 @@ class ParserTests(unittest.TestCase):
             module main {
                 module middle {
                     module inner {
-                        dec output x : str
+                        dec public x : str
                         x <- "hello from inner!"
                     }
                 }

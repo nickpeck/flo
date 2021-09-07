@@ -33,22 +33,13 @@ class ModuleTests(unittest.TestCase):
             "z": ('local', "hello")
         }
 
-    def test_declare_input(self):
+    def test_declare_public(self):
         mod = runtime.Module("mymod", x=3, y=4)
-        mod.declare_input('a', "myinput")
+        mod.declare_public('a', "myinput")
         assert mod.locals == {
             'x': ('local', 3),
             'y': ('local', 4), 
-            'a': ('input', 'myinput')}
-
-    def test_declare_output(self):
-        mod = runtime.Module("mymod", x=3, y=4)
-        mod.declare_output('b', "myoutput")
-        assert mod.locals == {
-            'x': ('local', 3),
-            'y': ('local', 4),
-            "b": ("output", "myoutput")
-        }
+            'a': ('public', 'myinput')}
 
 class ComponentTests(unittest.TestCase):
     def test_duplicate(self):
