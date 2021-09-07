@@ -166,7 +166,7 @@ class AsyncStream(Generic[T]):
             truthy = expr(head)
             if truthy:
                 filtered_stream.write(head)
-        subscriber = Subscriber(
+        subscriber = Subscriber[T](
             on_next = lambda x: _next(x)
         )
         self.subscribe(subscriber)
