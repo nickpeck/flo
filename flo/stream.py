@@ -6,9 +6,15 @@ from typing import TypeVar, Generic, Callable, Optional, List, Coroutine, Any
 import traceback
 
 class AsyncManager:
+    """Singleton instance that allows us to enqueue coroutines
+    for execution 
+    """
     __instance__ = None
     @staticmethod
     def get_instance():
+        """Return the manager instance, or create and return
+        one if it does not exist.
+        """
         if AsyncManager.__instance__ is None:
             AsyncManager.__instance__ = AsyncManager()
         return AsyncManager.__instance__
@@ -16,42 +22,32 @@ class AsyncManager:
     @staticmethod
     def renew():
         if AsyncManager.__instance__ is not None:
-            AsyncManager.__instance__.loop.close()
+            AsyncManager.__instance__._loop.close()
         AsyncManager.__instance__ = AsyncManager()
         return AsyncManager.__instance__
 
     def __init__(self):
-        self.loop = asyncio.new_event_loop();
-        self.funcs = []
+        self._loop = asyncio.new_event_loop()
+        self._queue = []
 
-    def add_async_func(self, task, arg):
-        #task,args = self.loop.create_task(coro)
-        #print("ADDING TASK", task, arg)
-        self.funcs.append((task,arg))
-        # https://stackoverflow.com/questions/51116849/asyncio-await-coroutine-more-than-once-periodic-tasks
-        
-        # async def wrapper(_async_func, args):
-            # while True:
-                # await _async_func(*args)
-        # self.loop.create_task(wrapper(task, args))
+    def enqueue_async(self, coro):
+        """Enqueue an coroutines, as task to be executed
+        on the event loop when run() is invoked.
+        """
+        self._queue.append(self._loop.create_task(coro))
 
     def run(self):
-        #print("STARTING RUN", len(self.funcs))
-        #import pprint
-        #pprint.pprint(self.funcs, indent=4)
+        """Schedual all tasks in the queue for execution on the
+        asyncio event loop.
+        """
         tasks = []
-        while len(self.funcs) > 0:
-            while len(self.funcs) > 0:
-                #pprint.pprint(self.funcs, indent=4)
-                #for f, arg in self.funcs:
-                #print("#", len(self.funcs))
-                f, arg = self.funcs.pop(0)
-                #print("!", len(self.funcs))
-                tasks.append(self.loop.create_task(f(arg)))
-                #await asyncio.create_task(f(arg))
-
-            self.loop.run_until_complete(asyncio.wait(tasks))
-        #print("ENDING RUN", len(self.funcs))
+        while len(self._queue) > 0:
+            while len(self._queue) > 0:
+                t = self._queue.pop(0)
+                tasks.append(t)
+            # nb, more tasks might get added to the queue here,
+            # hence the double 'while'
+            self._loop.run_until_complete(asyncio.wait(tasks))
 
 T = TypeVar('T')
 
@@ -109,9 +105,8 @@ class AsyncStream(Generic[T]):
             return self
         self._subscribers.append(subscriber)
         if self._v is not None:
-            AsyncManager.get_instance().add_async_func(
-                subscriber.on_next, self._v)
-            #await subscriber.on_next(self._v)
+            AsyncManager.get_instance().enqueue_async(
+                subscriber.on_next(self._v))
         return self
 
     def peek(self) -> Optional[T]:
@@ -149,12 +144,10 @@ class AsyncStream(Generic[T]):
             on_next = lambda head: joined.write(head)
         )
         self.subscribe(s1)
-        #await self.subscribe(s1)
         s2 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
         other.subscribe(s2)
-        #await other.subscribe(s2)
         return joined
 
     def filter(self, expr: Callable[[T], bool]) -> AsyncStream[T]:
@@ -170,7 +163,6 @@ class AsyncStream(Generic[T]):
             on_next = lambda x: _next(x)
         )
         self.subscribe(subscriber)
-        #await self.subscribe(subscriber)
         return filtered_stream
 
     def write(self, item: T) -> AsyncStream[T]:
@@ -182,8 +174,8 @@ class AsyncStream(Generic[T]):
 
         if self._subscribers != []:
             for s in self._subscribers:
-                AsyncManager.get_instance().add_async_func(
-                    s.on_next, _head)
+                AsyncManager.get_instance().enqueue_async(
+                    s.on_next(_head))
         return self
 
     @staticmethod
@@ -212,7 +204,7 @@ class AsyncStream(Generic[T]):
             output_stream.write(bound_func())
 
         subscriber = Subscriber[T](
-            on_next= _on_next
+            on_next = _on_next
         )
 
         for dep in dependants:
@@ -235,6 +227,6 @@ class ComputedMapped(AsyncStream):
 
         if self._subscribers != []:
             for s in self._subscribers:
-                AsyncManager.get_instance().add_async_func(
-                    s.on_next, _head)
+                AsyncManager.get_instance().enqueue_async(
+                    s.on_next(_head))
         return self

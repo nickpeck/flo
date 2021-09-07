@@ -36,8 +36,6 @@ class FloListenerImpl(FloListener):
         listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
-        #print("TASKS", AsyncManager.get_instance().funcs)
-        #AsyncManager.get_instance().run()
         return listener
 
     def __init__(self, main_module=None):
@@ -48,8 +46,6 @@ class FloListenerImpl(FloListener):
         else:
             self.scope = main_module
         self._is_get_attrib = False
-        #loop = asyncio.get_event_loop()
-        #tasks = []
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope
@@ -290,7 +286,6 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_mult_div(self, ctx:FloParser.Compound_expression_mult_divContext):
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '*':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a * b)
@@ -304,7 +299,6 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_plus_minus(self, ctx:FloParser.Compound_expression_plus_minusContext):
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '+':
-                #print("------",  ctx.children[0].getText(), ctx.children[2].getText(), self.register[-2:])
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a + b)
@@ -334,7 +328,6 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
         if len(ctx.children) == 3:
             self.register[0].write(self.register[1])
-            #asyncio.run(self.register[0].write(self.register[1]))
             AsyncManager.get_instance().run()
             self.register = []
         pass
@@ -351,7 +344,6 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) == 3:
             self.register[0].bindTo(self.register[1])
-            #asyncio.run(self.register[0].bindTo(self.register[1]))
             self.register = []
         pass
 

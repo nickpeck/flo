@@ -48,6 +48,7 @@ OUTPUT: 'output';
 IMPORT: 'uses';
 FROM: 'from';
 AS: 'as';
+ASYNC: 'async'
 
 //primitaves
 STRING:('"' ~('"')* '"') | ('\'' ~('\'')* '\'');
