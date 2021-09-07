@@ -48,7 +48,7 @@ OUTPUT: 'output';
 IMPORT: 'uses';
 FROM: 'from';
 AS: 'as';
-ASYNC: 'async'
+SYNC: 'sync';
 
 //primitaves
 STRING:('"' ~('"')* '"') | ('\'' ~('\'')* '\'');
@@ -184,6 +184,10 @@ compound_expression_paren
 
 statement: compound_expression;
 
-component: COMPONENT ID LCB (declaration)* (statement)* RCB;
+sync_block: SYNC LCB (statement)* RCB;
 
-module: MODULE ID LCB (import_statement)* (module | component | declaration)*  (statement)* RCB ;
+statements: (statement | sync_block)*;
+
+component: COMPONENT ID LCB (declaration)* statements RCB;
+
+module: MODULE ID LCB (import_statement)* (module | component | declaration)* statements RCB ;

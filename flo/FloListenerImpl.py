@@ -36,6 +36,8 @@ class FloListenerImpl(FloListener):
         listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
+        # run, to schedual any remaining tasks
+        AsyncManager.get_instance().run()
         return listener
 
     def __init__(self, main_module=None):
@@ -46,6 +48,7 @@ class FloListenerImpl(FloListener):
         else:
             self.scope = main_module
         self._is_get_attrib = False
+        self._is_sync = False
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope
@@ -129,7 +132,6 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#getAttrib.
     def exitGetAttrib(self, ctx:FloParser.GetAttribContext):
         self._is_get_attrib = False
-        pass
 
     # Enter a parse tree produced by FloParser#id.
     def enterId(self, ctx:FloParser.IdContext):
@@ -328,9 +330,11 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
         if len(ctx.children) == 3:
             self.register[0].write(self.register[1])
-            AsyncManager.get_instance().run()
+            # if this is within a sync {...} block, the
+            # asyncio event loop is run to completion on each put value
+            if self._is_sync:
+                AsyncManager.get_instance().run()
             self.register = []
-        pass
 
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):
@@ -338,14 +342,12 @@ class FloListenerImpl(FloListener):
             [c.getText() for c in ctx.children])))
         _tuple = tuple(self.register[-tuple_length:])
         self.register = self.register[:-tuple_length] + [_tuple]
-        pass
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) == 3:
             self.register[0].bindTo(self.register[1])
             self.register = []
-        pass
 
     # Enter a parse tree produced by FloParser#statement.
     def enterStatement(self, ctx:FloParser.StatementContext):
@@ -360,6 +362,14 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#component.
     def exitComponent(self, ctx:FloParser.ComponentContext):
         self._exit_nested_scope()
+
+    # Enter a parse tree produced by FloParser#sync_block.
+    def enterSync_block(self, ctx:FloParser.Sync_blockContext):
+        self._is_sync = True
+
+    # Exit a parse tree produced by FloParser#sync_block.
+    def exitSync_block(self, ctx:FloParser.Sync_blockContext):
+        self._is_sync = False
 
     # Enter a parse tree produced by FloParser#module.
     def enterModule(self, ctx:FloParser.ModuleContext):

@@ -201,12 +201,31 @@ class ParserTests(unittest.TestCase):
                     z : int = x+y
                 }
                 z->stdout
+                sync {
+                    x <- 8
+                    y <- 9
+                }
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['17']
+
+    def test_computed_addition_bind_to_output_async(self):
+        src = """
+            module main {
+                dec {
+                    x : int
+                    y : int
+                    z : int = x+y
+                }
+                z->stdout
+                // both of these are evaluated at the same time
                 x <- 8
                 y <- 9
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['17']
+        assert self.stdout == ['17', '17']
 
     def test_computed_feedback_loop(self):
         src = """
@@ -262,11 +281,13 @@ class ParserTests(unittest.TestCase):
                     z : int = x|x >= 5
                 }
                 z->stdout
-                x <- 0
-                x <- 5
-                x <- 6
-                x <- 4
-                x <- 10
+                sync {
+                    x <- 0
+                    x <- 5
+                    x <- 6
+                    x <- 4
+                    x <- 10
+                }
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
@@ -281,10 +302,12 @@ class ParserTests(unittest.TestCase):
                     z : int = x & y
                 }
                 z->stdout
-                x <- 1
-                y <- 2
-                x <- 3
-                y <- 4
+                sync {
+                    x <- 1
+                    y <- 2
+                    x <- 3
+                    y <- 4
+                }
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
@@ -302,8 +325,10 @@ class ParserTests(unittest.TestCase):
                 }
                 dec a : adder
                 a.z -> stdout
-                a.x <- 8
-                a.y <- 9
+                sync {
+                    a.x <- 8
+                    a.y <- 9
+                }
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)

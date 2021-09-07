@@ -224,6 +224,24 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#sync_block.
+    def enterSync_block(self, ctx:FloParser.Sync_blockContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#sync_block.
+    def exitSync_block(self, ctx:FloParser.Sync_blockContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#statements.
+    def enterStatements(self, ctx:FloParser.StatementsContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#statements.
+    def exitStatements(self, ctx:FloParser.StatementsContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#component.
     def enterComponent(self, ctx:FloParser.ComponentContext):
         pass
