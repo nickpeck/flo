@@ -54,6 +54,7 @@ STRING:('"' ~('"')* '"') | ('\'' ~('\'')* '\'');
 BOOL:'true' | 'false';
 ID :('a'..'z'|'A'..'Z'|'0'..'9'|'_')+;
 SPACE: ' ';
+//ERR_CHAR : . ;
 
 atom: STRING #string 
 	| NUMBER #number
@@ -67,7 +68,6 @@ import_statement:
 	(IMPORT ID (DOT ID)*)
 	| (FROM ID (DOT ID)* IMPORT (ID)*)
 	(AS ID)?;
-
 
 simpleDeclaration:
 	((PUBLIC)? ID COLON ID)
@@ -189,4 +189,6 @@ statements: (statement | sync_block)*;
 
 component: COMPONENT ID LCB (declaration)* statements RCB;
 
-module: MODULE ID LCB (import_statement)* (module | component | declaration)* statements RCB ;
+mod_body: (import_statement)* (module | component | declaration)* statements;
+
+module: MODULE ID LCB mod_body RCB ;

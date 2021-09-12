@@ -57,29 +57,32 @@ class Filter(Module):
         self.declare_public(name, input_stream)
 
 
-class Runtime(Subscriber[str]):
+class Runtime(Subscriber[int]):
+    SIG_TERMINATE = 0
     def _restart(self):
         pass
     def _exit(self):
-        pass
-    async def on_next(self, value):
+        sys.exit(0)
+    async def on_next(self, value: int):
+        if value == self.__class__.SIG_TERMINATE:
+            self._exit()
         # TODO react to value, terminate, restart etc
         pass
 
 def setup_default_runtime():
-    active_runtime = AsyncStream[str]
+    active_runtime = Runtime()
 
     _builtin_stdout = AsyncStream[Any]()
     _builtin_stdout.subscribe(
         Subscriber[str](
-            on_next = lambda s : sys.stdout.write(str(s))))
+            on_next = lambda s : sys.stdout.write(str(s) + "\n")))
 
     _builtin_stderr = AsyncStream[Any]()
     _builtin_stderr.subscribe(
         Subscriber[str](
-            on_next = lambda s : sys.stderr.write(str(s))))
+            on_next = lambda s : sys.stderr.write(str(s) + "\n")))
 
-    _builtin_runtime = AsyncStream[str]()
+    _builtin_runtime = AsyncStream[int]()
     _builtin_runtime.subscribe(active_runtime)
 
     __main_module__ = Module("main", **{

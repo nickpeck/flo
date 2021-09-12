@@ -2,5 +2,8 @@ import sys
 
 from . FloListenerImpl import FloListenerImpl
 
-file = sys.argv[1]
-FloListenerImpl.loadModule(file)
+try:
+    file = sys.argv[1]
+    FloListenerImpl.loadModule(file)
+except IndexError:
+    FloListenerImpl.repl()

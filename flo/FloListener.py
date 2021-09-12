@@ -251,6 +251,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#mod_body.
+    def enterMod_body(self, ctx:FloParser.Mod_bodyContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#mod_body.
+    def exitMod_body(self, ctx:FloParser.Mod_bodyContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#module.
     def enterModule(self, ctx:FloParser.ModuleContext):
         pass

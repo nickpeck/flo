@@ -1,7 +1,10 @@
 import asyncio
 import importlib
 import inspect
+import os
+import traceback
 from typing import Any, Union, Optional, List, Callable
+import signal
 import sys
 
 from antlr4 import * # type: ignore
@@ -11,6 +14,39 @@ from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
 from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager
+
+class EOFException(Exception):
+    pass
+
+class REPLErrorListener(ErrorListener):
+    def __init__(self):
+        super().__init__()
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        if offendingSymbol is not None:
+            if offendingSymbol.text == "<EOF>":
+                raise EOFException(offendingSymbol, line, column, msg, e)
+            else:
+                raise Exception(msg)
+
+    # def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
+        # #print("reportAmbiguity", recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs)
+        # #pass
+        # #raise Exception("reportAmbiguity")
+        # pass
+
+    # def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
+        # #print("reportAttemptingFullContext", recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs)
+        # #pass
+        
+        # #print(configs)
+        # #raise Exception("reportAttemptingFullContext")
+        # pass
+
+    # def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
+        # #print("reportContextSensitivity", dfa)
+        # #raise Exception("reportContextSensitivity")
+        # pass
 
 class FloListenerImpl(FloListener):
     """
@@ -39,6 +75,57 @@ class FloListenerImpl(FloListener):
         # run, to schedual any remaining tasks
         AsyncManager.get_instance().run()
         return listener
+
+    @staticmethod
+    def repl():
+        def signal_handler(sig, frame):
+            print('Bye')
+            sys.exit(0)
+        signal.signal(signal.SIGINT, signal_handler)
+        print('Press Ctrl+C to exit')
+        if os.name != 'nt':
+            signal.pause()
+        buffer = []
+        listener = None
+        prompt = "> "
+        while True:
+            buffer.append(input(prompt))
+            code = " ".join(buffer)
+            input_stream = InputStream(code)
+            lexer = FloLexer(input_stream)
+            stream = CommonTokenStream(lexer)
+            parser = FloParser(stream)
+            parser.removeErrorListeners()
+            parser.addErrorListener(REPLErrorListener())
+            try:
+                # attempt to parse the code in an AST
+                tree = parser.module()
+            except EOFException as eof:
+                # in the REPL, a premature EOF error indicates
+                # there we are still awaiting on further input,
+                # so continue to build the code from user input
+                prompt = "... "
+                continue
+            except Exception as e:
+                # Other exceptions, syntax error. Display and reset
+                # buffer:
+                print("SyntaxError", e)
+                buffer = []
+                prompt = "> "
+                continue
+            # we got this far, so the code is valid and complete. 
+            # Evaluate
+            listener = FloListenerImpl(None)
+            walker = ParseTreeWalker()
+            try:
+                walker.walk(listener, tree)
+                AsyncManager.get_instance().run()
+            except Exception:
+                # error occurs during evaluation
+                traceback.print_exc()
+            finally:
+                buffer = []
+                prompt = "> "
 
     def __init__(self, main_module=None):
         super().__init__()
