@@ -90,6 +90,28 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['7']
 
+    def test_simple_addition_no_spaces(self):
+        # nb addresses a bug with the lexer, whereby it was
+        # attempting to parse '3+4' as a number
+        src = """
+            module main {
+                stdout <- 3+4
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['7']
+
+    def test_parsing_numbers(self):
+        src = """
+            module main {
+                stdout <- 1 + 0.1
+                stdout <- 2 + .1
+                stdout <- 03 + .1
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['1.1', '2.1', '3.1']
+
     def test_simple_subtraction(self):
         src = """
             module main {
