@@ -8,12 +8,12 @@ else:
 # This class defines a complete listener for a parse tree produced by FloParser.
 class FloListener(ParseTreeListener):
 
-    # Enter a parse tree produced by FloParser#atom_json.
-    def enterAtom_json(self, ctx:FloParser.Atom_jsonContext):
+    # Enter a parse tree produced by FloParser#atom_dict.
+    def enterAtom_dict(self, ctx:FloParser.Atom_dictContext):
         pass
 
-    # Exit a parse tree produced by FloParser#atom_json.
-    def exitAtom_json(self, ctx:FloParser.Atom_jsonContext):
+    # Exit a parse tree produced by FloParser#atom_dict.
+    def exitAtom_dict(self, ctx:FloParser.Atom_dictContext):
         pass
 
 
@@ -98,12 +98,12 @@ class FloListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by FloParser#json.
-    def enterJson(self, ctx:FloParser.JsonContext):
+    # Enter a parse tree produced by FloParser#dictexpr.
+    def enterDictexpr(self, ctx:FloParser.DictexprContext):
         pass
 
-    # Exit a parse tree produced by FloParser#json.
-    def exitJson(self, ctx:FloParser.JsonContext):
+    # Exit a parse tree produced by FloParser#dictexpr.
+    def exitDictexpr(self, ctx:FloParser.DictexprContext):
         pass
 
 

@@ -206,7 +206,7 @@ class FloParser ( Parser ):
 
     RULE_atom = 0
     RULE_listexpr = 1
-    RULE_json = 2
+    RULE_dictexpr = 2
     RULE_import_statement = 3
     RULE_simpleDeclaration = 4
     RULE_computedDeclaration = 5
@@ -230,7 +230,7 @@ class FloParser ( Parser ):
     RULE_component = 23
     RULE_module = 24
 
-    ruleNames =  [ "atom", "listexpr", "json", "import_statement", "simpleDeclaration", 
+    ruleNames =  [ "atom", "listexpr", "dictexpr", "import_statement", "simpleDeclaration", 
                    "computedDeclaration", "filterDeclaration", "joinDeclaration", 
                    "declaration", "compound_expression_join", "compound_expression_filter", 
                    "compound_expression_not", "compound_expression_comparison", 
@@ -310,23 +310,23 @@ class FloParser ( Parser ):
             super().copyFrom(ctx)
 
 
-    class Atom_jsonContext(AtomContext):
+    class Atom_dictContext(AtomContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a FloParser.AtomContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
-        def json(self):
-            return self.getTypedRuleContext(FloParser.JsonContext,0)
+        def dictexpr(self):
+            return self.getTypedRuleContext(FloParser.DictexprContext,0)
 
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterAtom_json" ):
-                listener.enterAtom_json(self)
+            if hasattr( listener, "enterAtom_dict" ):
+                listener.enterAtom_dict(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitAtom_json" ):
-                listener.exitAtom_json(self)
+            if hasattr( listener, "exitAtom_dict" ):
+                listener.exitAtom_dict(self)
 
 
     class NumberContext(AtomContext):
@@ -611,11 +611,11 @@ class FloParser ( Parser ):
                 self.listexpr()
                 pass
             elif token in [FloParser.LCB]:
-                localctx = FloParser.Atom_jsonContext(self, localctx)
+                localctx = FloParser.Atom_dictContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 73
-                self.json()
+                self.dictexpr()
                 pass
             else:
                 raise NoViableAltException(self)
@@ -774,7 +774,7 @@ class FloParser ( Parser ):
             self.exitRule()
         return localctx
 
-    class JsonContext(ParserRuleContext):
+    class DictexprContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -812,23 +812,23 @@ class FloParser ( Parser ):
                 return self.getToken(FloParser.COMMA, i)
 
         def getRuleIndex(self):
-            return FloParser.RULE_json
+            return FloParser.RULE_dictexpr
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterJson" ):
-                listener.enterJson(self)
+            if hasattr( listener, "enterDictexpr" ):
+                listener.enterDictexpr(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitJson" ):
-                listener.exitJson(self)
+            if hasattr( listener, "exitDictexpr" ):
+                listener.exitDictexpr(self)
 
 
 
 
-    def json(self):
+    def dictexpr(self):
 
-        localctx = FloParser.JsonContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 4, self.RULE_json)
+        localctx = FloParser.DictexprContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 4, self.RULE_dictexpr)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)

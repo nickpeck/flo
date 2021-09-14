@@ -66,11 +66,11 @@ atom: STRING #string
 	| ( LPAREN compound_expression COMMA RPAREN 
 		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple
 	| listexpr #atom_list
-	| json #atom_json;
+	| dictexpr #atom_dict;
 
 listexpr : ( LSB compound_expression (COMMA compound_expression)* RSB);
 
-json: LCB STRING COLON atom
+dictexpr: LCB STRING COLON atom
 	(COMMA STRING COLON atom )* RCB;
 
 import_statement:

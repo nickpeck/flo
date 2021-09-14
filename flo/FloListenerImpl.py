@@ -367,7 +367,7 @@ class FloListenerImpl(FloListener):
         self.register = self.register[:-list_length] + [_list]
         
     # Exit a parse tree produced by FloParser#json.
-    def exitJson(self, ctx:FloParser.JsonContext):
+    def exitDictexpr(self, ctx:FloParser.DictexprContext):
         _children = list(filter(lambda c: c not in  ["{", "}", ",", ":"], 
             [c.getText() for c in ctx.children]))[::2]
         _children.reverse()
