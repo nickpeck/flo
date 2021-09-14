@@ -349,6 +349,15 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['1', '2', '3', '4']
 
+    def test_list_expressions(self):
+        src = """
+            module main {
+                stdout <- [1,2, 3 + 4]
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['[1, 2, 7]']
+
     def test_components(self):
         src = """
             module main {

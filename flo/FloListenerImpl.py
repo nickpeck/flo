@@ -338,6 +338,13 @@ class FloListenerImpl(FloListener):
         _tuple = tuple(self.register[-tuple_length:])
         self.register = self.register[:-tuple_length] + [_tuple]
 
+    # Exit a parse tree produced by FloParser#compund_expression_tuple.
+    def exitListexpr(self, ctx:FloParser.TupleContext):
+        list_length = len(list(filter(lambda c: c not in  ["[", "]", ","], 
+            [c.getText() for c in ctx.children])))
+        _list = list(self.register[-list_length:])
+        self.register = self.register[:-list_length] + [_list]
+
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) == 3:

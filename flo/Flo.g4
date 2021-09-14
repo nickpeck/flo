@@ -34,6 +34,8 @@ JOIN: '&';
 //punctuation
 LCB     :       '{';
 RCB     :       '}';
+LSB     :       '[';
+RSB     :       ']';
 LPAREN : '(';
 RPAREN : ')';
 COMMA  :	',';
@@ -61,7 +63,14 @@ atom: STRING #string
 	| ID #id
 	| atom (DOT atom)+ #getAttrib
 	| ( LPAREN compound_expression COMMA RPAREN 
-		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple;
+		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple
+	| listexpr #atom_list
+	| json #atom_json;
+
+listexpr : ( LSB compound_expression COMMA RSB 
+	| LSB compound_expression (COMMA compound_expression)+ RSB);
+
+json: LCB STRING COLON listexpr | json RCB;
 
 import_statement:
 	(IMPORT ID (DOT ID)*)
