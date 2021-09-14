@@ -358,6 +358,15 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['[1, 2, 7]']
 
+    def test_json_objects(self):
+        src = """
+            module main {
+                stdout <- {"a" : 1, "b" : {"c" : "hello"}}
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["{'a': 1, 'b': {'c': 'hello'}}"]
+
     def test_components(self):
         src = """
             module main {

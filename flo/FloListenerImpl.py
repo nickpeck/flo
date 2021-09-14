@@ -344,6 +344,19 @@ class FloListenerImpl(FloListener):
             [c.getText() for c in ctx.children])))
         _list = list(self.register[-list_length:])
         self.register = self.register[:-list_length] + [_list]
+        
+    # Exit a parse tree produced by FloParser#json.
+    def exitJson(self, ctx:FloParser.JsonContext):
+        _children = list(filter(lambda c: c not in  ["{", "}", ",", ":"], 
+            [c.getText() for c in ctx.children]))[::2]
+        _children.reverse()
+        obj = {}
+        while len(_children) > 0:
+            i = -len(_children)
+            key = _children.pop()[1:-1]
+            value = self.register.pop(i)
+            obj[key] = value
+        self.register.append(obj)
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
