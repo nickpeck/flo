@@ -8,6 +8,15 @@ else:
 # This class defines a complete listener for a parse tree produced by FloParser.
 class FloListener(ParseTreeListener):
 
+    # Enter a parse tree produced by FloParser#atom_dict.
+    def enterAtom_dict(self, ctx:FloParser.Atom_dictContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#atom_dict.
+    def exitAtom_dict(self, ctx:FloParser.Atom_dictContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#number.
     def enterNumber(self, ctx:FloParser.NumberContext):
         pass
@@ -53,12 +62,30 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#index.
+    def enterIndex(self, ctx:FloParser.IndexContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#index.
+    def exitIndex(self, ctx:FloParser.IndexContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#id.
     def enterId(self, ctx:FloParser.IdContext):
         pass
 
     # Exit a parse tree produced by FloParser#id.
     def exitId(self, ctx:FloParser.IdContext):
+        pass
+
+
+    # Enter a parse tree produced by FloParser#dictexpr.
+    def enterDictexpr(self, ctx:FloParser.DictexprContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#dictexpr.
+    def exitDictexpr(self, ctx:FloParser.DictexprContext):
         pass
 
 

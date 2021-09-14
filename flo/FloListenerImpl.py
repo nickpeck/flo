@@ -216,6 +216,27 @@ class FloListenerImpl(FloListener):
             returnval = returnval.get_member(r)
         self.register.append(returnval)
 
+    # Exit a parse tree produced by FloParser#index.
+    def exitIndex(self, ctx:FloParser.IndexContext):
+        # nb this is 1: sliced, as the leftmost is the coded rep of 'left'
+        rights = list(filter(
+            lambda x: x not in ['[', ']'],
+            [c.getText() for c in ctx.children]))[1:]
+        # modify each of the index values, parsing to a string or int, accordingly:
+        for i in range(0, len(rights)):
+            right = rights[i]
+            if right.startswith('"') and right.endswith('"'):
+                # its a str, because the parse adds "..."
+                rights[i] = right[1:-1]
+                continue
+            # its an int
+            rights[i] = int(rights[i])
+        left = self.register.pop(-1)
+        value = left[rights[0]]
+        for right in rights[1:]:
+            value = value[right]
+        self.register.append(value)
+
     # Exit a parse tree produced by FloParser#getAttrib.
     def exitGetAttrib(self, ctx:FloParser.GetAttribContext):
         self._is_get_attrib = False
@@ -248,13 +269,16 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
+        _type = None
         if ctx.children[0].getText() == "public":
-            _type = ctx.children[3].getText()
+            if len(ctx.children) == 4:
+                _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
             self.scope.declare_public(id, stream)
         else:
-            _type = ctx.children[2].getText()
+            if len(ctx.children) == 3:
+                _type = ctx.children[2].getText()
             id = ctx.children[0].getText()
             if _type in self.scope.locals and isinstance(self.scope.get_member(_type), Component):
                 comp_instance = self.scope.get_member(_type)
@@ -421,6 +445,19 @@ class FloListenerImpl(FloListener):
             [c.getText() for c in ctx.children])))
         _tuple = tuple(self.register[-tuple_length:])
         self.register = self.register[:-tuple_length] + [_tuple]
+
+    # Exit a parse tree produced by FloParser#json.
+    def exitDictexpr(self, ctx:FloParser.DictexprContext):
+        _children = list(filter(lambda c: c not in  ["{", "}", ",", ":"], 
+            [c.getText() for c in ctx.children]))[::2]
+        _children.reverse()
+        obj = {}
+        while len(_children) > 0:
+            i = -len(_children)
+            key = _children.pop()[1:-1]
+            value = self.register.pop(i)
+            obj[key] = value
+        self.register.append(obj)
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):

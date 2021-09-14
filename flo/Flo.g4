@@ -34,6 +34,8 @@ JOIN: '&';
 //punctuation
 LCB     :       '{';
 RCB     :       '}';
+LSB     :       '[';
+RSB     :       ']';
 LPAREN : '(';
 RPAREN : ')';
 COMMA  :	',';
@@ -61,8 +63,16 @@ atom: STRING #string
 	| BOOL #bool
 	| ID #id
 	| atom (DOT atom)+ #getAttrib
+	| atom (LSB (NUMBER|STRING) RSB)+ #index
 	| ( LPAREN compound_expression COMMA RPAREN 
-		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple;
+		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple
+//	| listexpr #atom_list
+	| dictexpr #atom_dict;
+
+//listexpr : ( LSB compound_expression (COMMA compound_expression)* RSB);
+
+dictexpr: LCB STRING COLON atom
+	(COMMA STRING COLON atom )* RCB;
 
 import_statement:
 	(IMPORT ID (DOT ID)*)
@@ -70,19 +80,19 @@ import_statement:
 	(AS ID)?;
 
 simpleDeclaration:
-	((PUBLIC)? ID COLON ID)
+	((PUBLIC)? ID (COLON ID)?)
 ;
 
 computedDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression)
 ;
 
 filterDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression_filter)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression_filter)
 ;
 
 joinDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression_join)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression_join)
 ;
 
 declaration:
