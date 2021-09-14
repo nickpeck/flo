@@ -358,6 +358,35 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['[1, 2, 7]']
 
+    def test_list_index_expressions(self):
+        src = """
+            module main {
+                stdout <- [1,2, 3 + 4][1]
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['2']
+
+    def test_list_index_expressions2(self):
+        src = """
+            module main {
+                dec x = [1,2, 3 + 4]
+                stdout <- x[1]
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['2']
+
+    def test_list_index_expressions_nested(self):
+        src = """
+            module main {
+                dec x = [1,2, [3, 4]]
+                stdout <- x[2][0]
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['3']
+
     def test_json_objects(self):
         src = """
             module main {
@@ -366,6 +395,15 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["{'a': 1, 'b': {'c': 'hello'}}"]
+
+    # def test_json_object_indexing(self):
+        # src = """
+            # module main {
+                # stdout <- {"a" : 1, "b" : {"c" : "hello"}}.b
+            # }
+        # """
+        # main_module = FloListenerImpl.loadString(src, self.runtime)
+        # assert self.stdout == ["{'c': 'hello'}"]
 
     def test_components(self):
         src = """

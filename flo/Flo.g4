@@ -62,6 +62,7 @@ atom: STRING #string
 	| BOOL #bool
 	| ID #id
 	| atom (DOT atom)+ #getAttrib
+	| atom (LSB (NUMBER|STRING) RSB)+ #index
 	| ( LPAREN compound_expression COMMA RPAREN 
 		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple
 	| listexpr #atom_list

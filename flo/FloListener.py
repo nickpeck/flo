@@ -62,6 +62,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#index.
+    def enterIndex(self, ctx:FloParser.IndexContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#index.
+    def exitIndex(self, ctx:FloParser.IndexContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#id.
     def enterId(self, ctx:FloParser.IdContext):
         pass
