@@ -65,10 +65,10 @@ atom: STRING #string
 	| atom (LSB (NUMBER|STRING) RSB)+ #index
 	| ( LPAREN compound_expression COMMA RPAREN 
 		| LPAREN compound_expression (COMMA compound_expression)+ RPAREN) #tuple
-	| listexpr #atom_list
+//	| listexpr #atom_list
 	| dictexpr #atom_dict;
 
-listexpr : ( LSB compound_expression (COMMA compound_expression)* RSB);
+//listexpr : ( LSB compound_expression (COMMA compound_expression)* RSB);
 
 dictexpr: LCB STRING COLON atom
 	(COMMA STRING COLON atom )* RCB;

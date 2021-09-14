@@ -104,13 +104,45 @@ dec {
 a -> b // a is bound to b
 ~~~
 
+### Primitive Types
+Flo supports the following types (all of which are wrappers around their native Python equivalents)
+~~~
+// numbers
+1
+1.5
+0.001
+
+// strings
+"Hello world"
+
+// booleans
+true, false
+
+// tuples (there is no list type, as flo values are techically immutable by design)
+(1,)
+(1, 2, 4, "hello world")
+
+// dictionaries
+{"a" : 1, "b" : {"c" : "hello"}}
+~~~
+
+Dictionaries and tuples support simple index lookups (of single values only at present), as per python:
+~~~
+(1, 2, 3, "hello world")[3]
+... "hello world"
+{"a" : 1, "b" : {"c" : "hello"}}["b"]["c"]
+... "hello world"
+{"a" : 1, 0 : 2}[0]
+... 2
+~~~
+
 ### Operators and Expressions
 Many operators and expressions are borrowed from Python syntax. There are a few differences. Here is a summary:
 ~~~
-
+TODO!
 ~~~
 
-### Feedback!
+### Feedback Loop!
 You may have spotted an obvious danger in this design. What if one were to specify a relationship such as:
 ~~~
 module main {
@@ -163,7 +195,7 @@ module main {
 }
 ~~~
 
-## Rebuilding the 
+## Rebuilding the Antlr lexer/parser
 Antlr 4 is used to generate the language parser. (You'll need antlr-4.7-complete.jar)
 After updating flo\flo.g4, run the following from the root folder to rebuild the lexer and parser:
 ~~~

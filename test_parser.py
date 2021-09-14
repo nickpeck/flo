@@ -352,16 +352,16 @@ class ParserTests(unittest.TestCase):
     def test_list_expressions(self):
         src = """
             module main {
-                stdout <- [1,2, 3 + 4]
+                stdout <- (1,2, 3 + 4)
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['[1, 2, 7]']
+        assert self.stdout == ['(1, 2, 7)']
 
     def test_list_index_expressions(self):
         src = """
             module main {
-                stdout <- [1,2, 3 + 4][1]
+                stdout <- (1,2, 3 + 4)[1]
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
@@ -370,7 +370,7 @@ class ParserTests(unittest.TestCase):
     def test_list_index_expressions2(self):
         src = """
             module main {
-                dec x = [1,2, 3 + 4]
+                dec x = (1,2, 3 + 4)
                 stdout <- x[1]
             }
         """
@@ -380,7 +380,7 @@ class ParserTests(unittest.TestCase):
     def test_list_index_expressions_nested(self):
         src = """
             module main {
-                dec x = [1,2, [3, 4]]
+                dec x = (1,2, (3, 4))
                 stdout <- x[2][0]
             }
         """
