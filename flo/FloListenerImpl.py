@@ -161,13 +161,16 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
+        _type = None
         if ctx.children[0].getText() == "public":
-            _type = ctx.children[3].getText()
+            if len(ctx.children) == 4:
+                _type = ctx.children[3].getText()
             id = ctx.children[1].getText()
             stream = AsyncStream[_type]() # type: ignore
             self.scope.declare_public(id, stream)
         else:
-            _type = ctx.children[2].getText()
+            if len(ctx.children) == 3:
+                _type = ctx.children[2].getText()
             id = ctx.children[0].getText()
             if _type in self.scope.locals and isinstance(self.scope.get_member(_type), Component):
                 comp_instance = self.scope.get_member(_type)

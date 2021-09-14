@@ -201,6 +201,20 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["(42, 'Hello world', True)"]
 
+    def test_typings_are_optional(self):
+        src = """
+            module main {
+                dec {
+                    MEANING_OF_LIFE = 42
+                    greeting = "Hello world"
+                    truthy = true
+                }
+                stdout <- (MEANING_OF_LIFE, greeting, truthy)
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["(42, 'Hello world', True)"]
+
     def test_vars_are_immutable_within_scope(self):
         src = """
             module main {

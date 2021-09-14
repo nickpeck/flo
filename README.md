@@ -54,9 +54,9 @@ Before we move on, lets write that previous example in Flo syntax:
 ~~~
 module main {
     dec {
-        a : int = 4
-        b : int = 3
-        c : int = a + b
+        a = 4
+        b = 3
+        c = a + b
     }
     c -> stdout
     a <- 6
@@ -64,7 +64,7 @@ module main {
 ~~~
 The new language features introduced here, are:
 - All 'variables' must be declared at the start of the module, before we actually interact with them in any way. This takes place with the dec keyword.
-- Variable take a type declaration, (which is redundant at the present time), but in the future will offer static-type checking, as the related python tools for this mature.
+- Variables can take a type declaration, (which is redundant at the present time), but in the future will offer static-type checking, as the related python tools for this mature. (a : int = 4)
 - a and b were intialised with default values. These are optional, but note that these variables will not notify their observers until a concete value is written to them.
 - 'c' is what we call a 'Computed' variable (more on this later, see 'connecting streams'). A computed variable must be declared in the dec block (because the pipes operate in an asynchronous manner, we cannot declare new ones after the fact).
 - The operator '->' binds the state of one variable to another, so in this case, we are declaring a binding between c, and stdout (ie, as c is recomputed, the value will be pushed to standard output)

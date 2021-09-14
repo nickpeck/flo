@@ -70,19 +70,19 @@ import_statement:
 
 
 simpleDeclaration:
-	((PUBLIC)? ID COLON ID)
+	((PUBLIC)? ID (COLON ID)?)
 ;
 
 computedDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression)
 ;
 
 filterDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression_filter)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression_filter)
 ;
 
 joinDeclaration:
-	((PUBLIC)? ID COLON ID EQUALS compound_expression_join)
+	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression_join)
 ;
 
 declaration:
