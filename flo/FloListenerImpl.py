@@ -129,18 +129,21 @@ class FloListenerImpl(FloListener):
             returnval = returnval.get_member(r)
         self.register.append(returnval)
 
-    # Enter a parse tree produced by FloParser#index.
-    def enterIndex(self, ctx:FloParser.IndexContext):
-        print("enterIndex", [c.getText() for c in ctx.children], self.register)
-        pass
-
     # Exit a parse tree produced by FloParser#index.
-    def exitIndex(self, ctx:FloParser.IndexContext):\
+    def exitIndex(self, ctx:FloParser.IndexContext):
         # nb this is 1: sliced, as the leftmost is the coded rep of 'left'
         rights = list(filter(
             lambda x: x not in ['[', ']'],
             [c.getText() for c in ctx.children]))[1:]
-        rights = [int(r) for r in rights]
+        # modify each of the index values, parsing to a string or int, accordingly:
+        for i in range(0, len(rights)):
+            right = rights[i]
+            if right.startswith('"') and right.endswith('"'):
+                # its a str, because the parse adds "..."
+                rights[i] = right[1:-1]
+                continue
+            # its an int
+            rights[i] = int(rights[i])
         left = self.register.pop(-1)
         value = left[rights[0]]
         for right in rights[1:]:
