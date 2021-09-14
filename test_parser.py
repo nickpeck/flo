@@ -433,6 +433,16 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['hello']
 
+    def test_json_object_indexing_nested3(self):
+        src = """
+            module main {
+                dec x = {"a" : 1, "b" : (1,2,3,4)}
+                stdout <- x["b"][0]
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['1']
+
     def test_components(self):
         src = """
             module main {
