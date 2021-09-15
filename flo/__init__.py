@@ -1,11 +1,14 @@
+"""Flo language runtime
+"""
 import platform
 import sys
 
 # version check
-maj, min, patchlevel = platform.python_version_tuple()
-if int(maj) < 3 or int(min) < 7:
+maj_ver, min_ver, patchlevel = platform.python_version_tuple()
+if int(maj_ver) < 3 or int(min_ver) < 7:
     raise Exception("Python version >= 3.7 is required")
 
+# pylint: disable=wrong-import-order, wrong-import-position
 from . stream import AsyncStream, Subscriber, AsyncManager
 from . runtime import Module, Component, Filter
 from . FloListenerImpl import FloListenerImpl

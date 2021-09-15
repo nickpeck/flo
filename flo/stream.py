@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from functools import wraps
-from typing import TypeVar, Generic, Callable, Optional, List, Coroutine, Any
-import traceback
+from typing import TypeVar, Generic, Callable, Optional, List, Any
 
 class AsyncManager:
     """Singleton instance that allows us to enqueue coroutines
-    for execution 
+    for execution
     """
     __instance__ = None
     @staticmethod
@@ -21,6 +20,8 @@ class AsyncManager:
 
     @staticmethod
     def renew():
+        """Reset the AsyncManager instance
+        """
         if AsyncManager.__instance__ is not None:
             AsyncManager.__instance__._loop.close()
         AsyncManager.__instance__ = AsyncManager()
@@ -43,8 +44,8 @@ class AsyncManager:
         tasks = []
         while len(self._queue) > 0:
             while len(self._queue) > 0:
-                t = self._queue.pop(0)
-                tasks.append(t)
+                task = self._queue.pop(0)
+                tasks.append(task)
             # nb, more tasks might get added to the queue here,
             # hence the double 'while'
             self._loop.run_until_complete(asyncio.wait(tasks))
@@ -59,7 +60,7 @@ class Subscriber(Generic[T]):
         self._on_next = on_next
 
     async def on_next(self, value):
-        """Called when a new value is communicated to the 
+        """Called when a new value is communicated to the
         subscriber by an entity it is subscribed to.
         """
         await asyncio.coroutine(self._on_next)(value)
@@ -70,7 +71,7 @@ class AsyncStream(Generic[T]):
     communication between multiple subscribers.
     """
     def __init__(self, head=None, dependants=None):
-        """Initialize a AsyncStream, where head is 
+        """Initialize a AsyncStream, where head is
         an initial value of Type T
         """
         self._v = None
@@ -98,7 +99,7 @@ class AsyncStream(Generic[T]):
     def subscribe(self, subscriber: Subscriber[T]) -> AsyncStream[T]:
         """Add a new subscriber and return the stream.
         If the subscriber is already added,
-        then silently return. If this stream has a value, 
+        then silently return. If this stream has a value,
         notify the subscriber.
         """
         if subscriber in self._subscribers:
@@ -115,7 +116,7 @@ class AsyncStream(Generic[T]):
         """
         return self._v
 
-    def bindTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
+    def bind_to(self, other: AsyncStream[T]) -> AsyncStream[T]:
         """Create a binding between this stream, and another stream
         of a similar type, so that the other is subscribed to events
         in this stream. Return the initial stream.
@@ -125,13 +126,13 @@ class AsyncStream(Generic[T]):
             raise RuntimeError("Cannot bind to a dependant")
         if other == self:
             raise Exception("AsyncStream cannot bind to itself")
-        s = Subscriber[T](
+        subscr = Subscriber[T](
             on_next = lambda head: other.write(head)
         )
-        self.subscribe(s)
+        self.subscribe(subscr)
         return other
 
-    def joinTo(self, other: AsyncStream[T]) -> AsyncStream[T]:
+    def join_to(self, other: AsyncStream[T]) -> AsyncStream[T]:
         """Join this stream to another stream of the same type.
         The result is a new stream that recieves events from both
         source streams.
@@ -140,14 +141,14 @@ class AsyncStream(Generic[T]):
         if other == self:
             raise Exception("AsyncStream cannot join to itself")
         joined = AsyncStream[T]()
-        s1 = Subscriber[T](
+        subscr1 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        self.subscribe(s1)
-        s2 = Subscriber[T](
+        self.subscribe(subscr1)
+        subscr2 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
-        other.subscribe(s2)
+        other.subscribe(subscr2)
         return joined
 
     def filter(self, expr: Callable[[T], bool]) -> AsyncStream[T]:
@@ -173,9 +174,9 @@ class AsyncStream(Generic[T]):
         _head = self._v
 
         if self._subscribers != []:
-            for s in self._subscribers:
+            for subscr in self._subscribers:
                 AsyncManager.get_instance().enqueue_async(
-                    s.on_next(_head))
+                    subscr.on_next(_head))
         return self
 
     @staticmethod
@@ -195,7 +196,7 @@ class AsyncStream(Generic[T]):
 
         output_stream = AsyncStream[T](None, dependants)
         bound_func = _bind(func, *dependants)
-        def _on_next(x):
+        def _on_next(val):
             nonlocal bound_func
             nonlocal output_stream
             nonlocal dependants
@@ -226,7 +227,7 @@ class ComputedMapped(AsyncStream):
         _head = self._v
 
         if self._subscribers != []:
-            for s in self._subscribers:
+            for subscr in self._subscribers:
                 AsyncManager.get_instance().enqueue_async(
-                    s.on_next(_head))
+                    subscr.on_next(_head))
         return self

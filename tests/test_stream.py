@@ -35,7 +35,7 @@ class AsyncStreamTests(unittest.TestCase):
 
         stream1 = AsyncStream[int]()
         stream2 = AsyncStream[int]()
-        stream1.bindTo(stream2)
+        stream1.bind_to(stream2)
         stream1.write(10)
         AsyncManager.get_instance().run()
         result = stream2.peek()
@@ -46,15 +46,15 @@ class AsyncStreamTests(unittest.TestCase):
 
         stream1 = AsyncStream[int]()
         with self.assertRaises(Exception) as e:
-            stream1.bindTo(stream1)
+            stream1.bind_to(stream1)
         result = e.exception.args
 
         assert result == ("AsyncStream cannot bind to itself",)
             
-    def test_joinTo(self):
+    def test_join_to(self):
         stream1 = AsyncStream[str]()
         stream2 = AsyncStream[str]()
-        stream3 = stream1.joinTo(stream2)
+        stream3 = stream1.join_to(stream2)
 
         subscriber_called_with = []
         def _callback(x):
@@ -75,7 +75,7 @@ class AsyncStreamTests(unittest.TestCase):
     def test_stream_cannot_join_to_itself(self):
         stream1 = AsyncStream[int]()
         with self.assertRaises(Exception) as e:
-            stream1.joinTo(stream1)
+            stream1.join_to(stream1)
         assert e.exception.args == ("AsyncStream cannot join to itself",)
 
     def test_filter(self):

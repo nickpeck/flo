@@ -1,3 +1,6 @@
+# pylint: disable=invalid-name
+"""Flo Antlr Listener implementation
+"""
 import asyncio
 import importlib
 import inspect
@@ -7,6 +10,7 @@ from typing import Any, Union, Optional, List, Callable
 import signal
 import sys
 
+# pylint: disable=wildcard-import
 from antlr4 import * # type: ignore
 from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
@@ -16,22 +20,24 @@ from . runtime import setup_default_runtime, Component, Filter, Module
 from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager
 
 class EOFException(Exception):
+    """Indicates that the input could not be passed owing to
+    an unexpeced EOF.
+    """
     pass
 
 class REPLErrorListener(ErrorListener):
-    def __init__(self):
-        super().__init__()
-
+    """Custom error listener used in the REPL
+    """
+    # pylint: disable=too-many-arguments
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         """Listen for and raise all syntax error.
-        EOF syntax errors have a special context in the REPL, so raise 
+        EOF syntax errors have a special context in the REPL, so raise
         EOFException in this case.
         """
         if offendingSymbol is not None:
             if offendingSymbol.text == "<EOF>":
                 raise EOFException(offendingSymbol, line, column, msg, e)
-            else:
-                raise Exception(msg)
+            raise Exception(msg)
 
 class FloListenerImpl(FloListener):
     """
@@ -40,11 +46,15 @@ class FloListenerImpl(FloListener):
     """
     @staticmethod
     def loadModule(name, main_module=None):
+        """Load a module from a given file name
+        """
         input_stream = FileStream(name)
         return FloListenerImpl._parse_module(input_stream, main_module)
 
     @staticmethod
     def loadString(code, main_module=None):
+        """Load a module from direct code string input
+        """
         input_stream = InputStream(code)
         return FloListenerImpl._parse_module(input_stream, main_module)
 
@@ -63,12 +73,16 @@ class FloListenerImpl(FloListener):
 
     @staticmethod
     def repl():
+        """Entry point for the read-evaluate-print-loop
+        """
+        # pylint: disable=unused-argument
         def signal_handler(sig, frame):
             print('Bye')
             sys.exit(0)
         signal.signal(signal.SIGINT, signal_handler)
         print('Press Ctrl+C to exit')
         if os.name != 'nt':
+            # pylint: disable no-member
             signal.pause()
         buffer = []
         listener = FloListenerImpl(None, True)
@@ -86,7 +100,7 @@ class FloListenerImpl(FloListener):
             try:
                 # attempt to parse the code in an AST
                 tree = parser.repl_stmt()
-            except EOFException as eof:
+            except EOFException:
                 # in the REPL, a premature EOF error indicates
                 # there we are still awaiting on further input,
                 # so continue to build the code from user input
@@ -99,7 +113,7 @@ class FloListenerImpl(FloListener):
                 buffer = []
                 prompt = "> "
                 continue
-            # we got this far, so the code is valid and complete. 
+            # we got this far, so the code is valid and complete.
             # Evaluate
             try:
                 walker.walk(listener, tree)
@@ -122,7 +136,10 @@ class FloListenerImpl(FloListener):
         self._is_sync = False
         self.is_repl = is_repl
 
-    def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
+    def _enter_nested_scope(self,
+        scope: Union[Module, Component, Filter],
+        name: Optional[str] = None):
+
         scope.parent = self.scope
         if name is not None:
             self.scope.declare_local(name, scope)
@@ -194,7 +211,6 @@ class FloListenerImpl(FloListener):
         self._is_get_attrib = True
         left = ctx.children[0].getText()
         rights = ctx.children[2].getText().split(".")
-        
         right = rights[0]
         returnval = self.scope.get_member(left).get_member(right)
         for r in rights[1:]:
@@ -208,8 +224,7 @@ class FloListenerImpl(FloListener):
             lambda x: x not in ['[', ']'],
             [c.getText() for c in ctx.children]))[1:]
         # modify each of the index values, parsing to a string or int, accordingly:
-        for i in range(0, len(rights)):
-            right = rights[i]
+        for i, right in enumerate(rights):
             if right.startswith('"') and right.endswith('"'):
                 # its a str, because the parse adds "..."
                 rights[i] = right[1:-1]
@@ -334,11 +349,13 @@ class FloListenerImpl(FloListener):
         left = self.register[-2]
         right = self.register[-1]
         self.register = self.register[:-2]
-        joined = left.joinTo(right)
+        joined = left.join_to(right)
         self.register.append(joined)
 
     # Exit a parse tree produced by FloParser#compound_expression_comparison.
-    def exitCompound_expression_comparison(self, ctx:FloParser.Compound_expression_comparisonContext):
+    def exitCompound_expression_comparison(self,
+        ctx:FloParser.Compound_expression_comparisonContext):
+
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '>':
                 left = self.register[-2]
@@ -366,14 +383,18 @@ class FloListenerImpl(FloListener):
                 self._make_computed([left, right], lambda a,b: a == b)
 
     # Exit a parse tree produced by FloParser#compound_expression_not.
-    def exitCompound_expression_not(self, ctx:FloParser.Compound_expression_notContext):
+    def exitCompound_expression_not(self,
+        ctx:FloParser.Compound_expression_notContext):
+
         if len(ctx.children) >= 2:
             if ctx.children[0].getText() == '!':
                 right = self.register[-1]
                 self._make_computed([right], lambda a: not a)
 
     # Exit a parse tree produced by FloParser#compound_expression_mult_div.
-    def exitCompound_expression_mult_div(self, ctx:FloParser.Compound_expression_mult_divContext):
+    def exitCompound_expression_mult_div(self,
+    ctx:FloParser.Compound_expression_mult_divContext):
+
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '*':
                 left = self.register[-2]
@@ -386,7 +407,9 @@ class FloListenerImpl(FloListener):
                 self._make_computed([left, right], lambda a,b: a / b)
 
     # Exit a parse tree produced by FloParser#compound_expression_plus_minus.
-    def exitCompound_expression_plus_minus(self, ctx:FloParser.Compound_expression_plus_minusContext):
+    def exitCompound_expression_plus_minus(self,
+        ctx:FloParser.Compound_expression_plus_minusContext):
+
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == '+':
                 left = self.register[-2]
@@ -399,7 +422,9 @@ class FloListenerImpl(FloListener):
                 self._make_computed([left, right], lambda a,b: a - b)
 
     # Exit a parse tree produced by FloParser#compound_expression_and.
-    def exitCompound_expression_and(self, ctx:FloParser.Compound_expression_andContext):
+    def exitCompound_expression_and(self,
+        ctx:FloParser.Compound_expression_andContext):
+
         if len(ctx.children) >= 3:
             if ctx.children[1].getText() == 'and':
                 left = self.register[-2]
@@ -407,15 +432,19 @@ class FloListenerImpl(FloListener):
                 self._make_computed([left, right], lambda a,b: a and b)
 
     # Exit a parse tree produced by FloParser#compound_expression_or.
-    def exitCompound_expression_or(self, ctx:FloParser.Compound_expression_orContext):
-         if len(ctx.children) >= 3:
+    def exitCompound_expression_or(self,
+        ctx:FloParser.Compound_expression_orContext):
+
+        if len(ctx.children) >= 3:
             if ctx.children[1].getText() == 'or':
                 left = self.register[-2]
                 right = self.register[-1]
                 self._make_computed([left, right], lambda a,b: a or b)
 
     # Exit a parse tree produced by FloParser#compound_expression_putvalue.
-    def exitCompound_expression_putvalue(self, ctx:FloParser.Compound_expression_putvalueContext):
+    def exitCompound_expression_putvalue(self,
+        ctx:FloParser.Compound_expression_putvalueContext):
+
         if len(ctx.children) == 3:
             self.register[0].write(self.register[1])
             # if this is within a sync {...} block, the
@@ -426,14 +455,14 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):
-        tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","], 
+        tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","],
             [c.getText() for c in ctx.children])))
         _tuple = tuple(self.register[-tuple_length:])
         self.register = self.register[:-tuple_length] + [_tuple]
 
     # Exit a parse tree produced by FloParser#json.
     def exitDictexpr(self, ctx:FloParser.DictexprContext):
-        _children = list(filter(lambda c: c not in  ["{", "}", ",", ":"], 
+        _children = list(filter(lambda c: c not in  ["{", "}", ",", ":"],
             [c.getText() for c in ctx.children]))[::2]
         _children.reverse()
         obj = {}
@@ -447,7 +476,7 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) == 3:
-            self.register[0].bindTo(self.register[1])
+            self.register[0].bind_to(self.register[1])
             self.register = []
 
     # Enter a parse tree produced by FloParser#statement.
