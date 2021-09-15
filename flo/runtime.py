@@ -1,3 +1,5 @@
+"""Entities used as part of the runtime
+"""
 from __future__ import annotations
 
 import sys
@@ -15,7 +17,7 @@ class Module:
         if name in self.locals:
             raise Exception("Variable '{}' is already defined".format(name))
 
-    def declare_local(self, name: str, 
+    def declare_local(self, name: str,
         attr: Union[AsyncStream, Component, Module]):
         self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
@@ -38,15 +40,15 @@ class Component(Module):
         super().__init__(name, **opts)
 
     def duplicate(self, **overrides):
-        c = Component(self.name)
-        c.locals = self.locals
+        comp = Component(self.name)
+        comp.locals = self.locals
         for key in overrides.keys():
-            if key in c.locals:
-                access = c.locals[key][0]
-                c.locals[key] = (access, overrides[key])
+            if key in comp.locals:
+                access = comp.locals[key][0]
+                comp.locals[key] = (access, overrides[key])
             else:
-                raise Exception("{} has no local attr '{}'".format(c, key))
-        return c
+                raise Exception("{} has no local attr '{}'".format(comp, key))
+        return comp
 
     def __str__(self):
         return "<Component '{}'>".format(self.name)
@@ -90,5 +92,5 @@ def setup_default_runtime():
         "stderr" : _builtin_stderr,
         "rt" : _builtin_runtime
     })
-    
+
     return __main_module__
