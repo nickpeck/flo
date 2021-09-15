@@ -86,7 +86,8 @@ class FloListenerImpl(FloListener):
         if os.name != 'nt':
             signal.pause()
         buffer = []
-        listener = None
+        listener = FloListenerImpl(None, True)
+        walker = ParseTreeWalker()
         prompt = "> "
         while True:
             buffer.append(input(prompt))
@@ -99,7 +100,7 @@ class FloListenerImpl(FloListener):
             parser.addErrorListener(REPLErrorListener())
             try:
                 # attempt to parse the code in an AST
-                tree = parser.module()
+                tree = parser.mod_body()
             except EOFException as eof:
                 # in the REPL, a premature EOF error indicates
                 # there we are still awaiting on further input,
@@ -115,8 +116,6 @@ class FloListenerImpl(FloListener):
                 continue
             # we got this far, so the code is valid and complete. 
             # Evaluate
-            listener = FloListenerImpl(None)
-            walker = ParseTreeWalker()
             try:
                 walker.walk(listener, tree)
                 AsyncManager.get_instance().run()
@@ -127,7 +126,7 @@ class FloListenerImpl(FloListener):
                 buffer = []
                 prompt = "> "
 
-    def __init__(self, main_module=None):
+    def __init__(self, main_module=None, is_repl=False):
         super().__init__()
         self.register = []
         if main_module is None:
@@ -136,6 +135,7 @@ class FloListenerImpl(FloListener):
             self.scope = main_module
         self._is_get_attrib = False
         self._is_sync = False
+        self.is_repl = is_repl
 
     def _enter_nested_scope(self, scope: Union[Module, Component, Filter], name: Optional[str] = None):
         scope.parent = self.scope
@@ -486,6 +486,11 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#sync_block.
     def exitSync_block(self, ctx:FloParser.Sync_blockContext):
         self._is_sync = False
+
+    # Exit a parse tree produced by FloParser#mod_body.
+    def exitMod_body(self, ctx:FloParser.Mod_bodyContext):
+        if self.is_repl and len(self.register) > 0:
+            print(self.register[-1])
 
     # Enter a parse tree produced by FloParser#module.
     def enterModule(self, ctx:FloParser.ModuleContext):
