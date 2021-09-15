@@ -23,30 +23,15 @@ class REPLErrorListener(ErrorListener):
         super().__init__()
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        """Listen for and raise all syntax error.
+        EOF syntax errors have a special context in the REPL, so raise 
+        EOFException in this case.
+        """
         if offendingSymbol is not None:
             if offendingSymbol.text == "<EOF>":
                 raise EOFException(offendingSymbol, line, column, msg, e)
             else:
                 raise Exception(msg)
-
-    # def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
-        # #print("reportAmbiguity", recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs)
-        # #pass
-        # #raise Exception("reportAmbiguity")
-        # pass
-
-    # def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
-        # #print("reportAttemptingFullContext", recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs)
-        # #pass
-        
-        # #print(configs)
-        # #raise Exception("reportAttemptingFullContext")
-        # pass
-
-    # def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
-        # #print("reportContextSensitivity", dfa)
-        # #raise Exception("reportContextSensitivity")
-        # pass
 
 class FloListenerImpl(FloListener):
     """
