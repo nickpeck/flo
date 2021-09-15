@@ -100,7 +100,7 @@ class FloListenerImpl(FloListener):
             parser.addErrorListener(REPLErrorListener())
             try:
                 # attempt to parse the code in an AST
-                tree = parser.mod_body()
+                tree = parser.repl_stmt()
             except EOFException as eof:
                 # in the REPL, a premature EOF error indicates
                 # there we are still awaiting on further input,
@@ -488,7 +488,7 @@ class FloListenerImpl(FloListener):
         self._is_sync = False
 
     # Exit a parse tree produced by FloParser#mod_body.
-    def exitMod_body(self, ctx:FloParser.Mod_bodyContext):
+    def exitRepl_stmt(self, ctx:FloParser.Repl_stmtContext):
         if self.is_repl and len(self.register) > 0:
             print(self.register[-1])
 

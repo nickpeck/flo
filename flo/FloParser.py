@@ -222,7 +222,7 @@ class FloParser ( Parser ):
     RULE_sync_block = 20
     RULE_statements = 21
     RULE_component = 22
-    RULE_mod_body = 23
+    RULE_repl_stmt = 23
     RULE_module = 24
 
     ruleNames =  [ "atom", "dictexpr", "import_statement", "simpleDeclaration", 
@@ -233,7 +233,7 @@ class FloParser ( Parser ):
                    "compound_expression_and", "compound_expression_or", 
                    "compound_expression_putvalue", "compound_expression", 
                    "compound_expression_paren", "statement", "sync_block", 
-                   "statements", "component", "mod_body", "module" ]
+                   "statements", "component", "repl_stmt", "module" ]
 
     EOF = Token.EOF
     CR=1
@@ -2378,7 +2378,7 @@ class FloParser ( Parser ):
             self.exitRule()
         return localctx
 
-    class Mod_bodyContext(ParserRuleContext):
+    class Repl_stmtContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -2417,23 +2417,23 @@ class FloParser ( Parser ):
 
 
         def getRuleIndex(self):
-            return FloParser.RULE_mod_body
+            return FloParser.RULE_repl_stmt
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterMod_body" ):
-                listener.enterMod_body(self)
+            if hasattr( listener, "enterRepl_stmt" ):
+                listener.enterRepl_stmt(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitMod_body" ):
-                listener.exitMod_body(self)
+            if hasattr( listener, "exitRepl_stmt" ):
+                listener.exitRepl_stmt(self)
 
 
 
 
-    def mod_body(self):
+    def repl_stmt(self):
 
-        localctx = FloParser.Mod_bodyContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 46, self.RULE_mod_body)
+        localctx = FloParser.Repl_stmtContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 46, self.RULE_repl_stmt)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
@@ -2498,8 +2498,8 @@ class FloParser ( Parser ):
         def LCB(self):
             return self.getToken(FloParser.LCB, 0)
 
-        def mod_body(self):
-            return self.getTypedRuleContext(FloParser.Mod_bodyContext,0)
+        def repl_stmt(self):
+            return self.getTypedRuleContext(FloParser.Repl_stmtContext,0)
 
 
         def RCB(self):
@@ -2532,7 +2532,7 @@ class FloParser ( Parser ):
             self.state = 340
             self.match(FloParser.LCB)
             self.state = 341
-            self.mod_body()
+            self.repl_stmt()
             self.state = 342
             self.match(FloParser.RCB)
         except RecognitionException as re:

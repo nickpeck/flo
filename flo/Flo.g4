@@ -97,14 +97,14 @@ joinDeclaration:
 
 declaration:
 	DEC (
-        LCB (
-            simpleDeclaration
-            | computedDeclaration
-            | filterDeclaration
-            | joinDeclaration
-        )+ RCB
-    | (simpleDeclaration | computedDeclaration | filterDeclaration)
-    );
+		LCB (
+			simpleDeclaration
+			| computedDeclaration
+			| filterDeclaration
+			| joinDeclaration
+		)+ RCB
+	| (simpleDeclaration | computedDeclaration | filterDeclaration)
+	);
 
 compound_expression_join
 	:
@@ -199,6 +199,6 @@ statements: (statement | sync_block)*;
 
 component: COMPONENT ID LCB (declaration)* statements RCB;
 
-mod_body: (import_statement)* (module | component | declaration)* statements;
+repl_stmt: (import_statement)* (module | component | declaration)* statements;
 
-module: MODULE ID LCB mod_body RCB ;
+module: MODULE ID LCB repl_stmt RCB ;
