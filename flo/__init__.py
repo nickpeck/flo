@@ -10,5 +10,5 @@ if int(maj_ver) < 3 or int(min_ver) < 7:
 
 # pylint: disable=wrong-import-order, wrong-import-position
 from . stream import AsyncStream, Subscriber, AsyncManager
-from . runtime import Module, Component, Filter
+from . runtime import Module, Component, Filter, compose_file_module
 from . FloListenerImpl import FloListenerImpl

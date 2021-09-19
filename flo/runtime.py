@@ -71,6 +71,33 @@ class Runtime(Subscriber[int]):
         # TODO react to value, terminate, restart etc
         pass
 
+def add_file_reader(parent_module):
+    reader = Component("reader")
+    path = AsyncStream[str]()
+    reader.declare_public("path", path)
+    reader_stream = AsyncStream[str]()
+    reader.declare_public("readlines", reader_stream)
+    def _reader(path):
+        with open(path, "r") as f:
+            for line in f:
+                reader_stream.write(line)
+    path.subscribe(
+        Subscriber(
+            on_next = lambda p: _reader(p)
+        )
+    )
+    parent_module.declare_public("reader", reader)
+
+def add_file_writer(parent_module):
+    writer = Component("writer")
+    parent_module.declare_public("writer", writer)
+
+def compose_file_module(parent_module):
+    file = Component("file")
+    add_file_reader(file)
+    add_file_writer(file)
+    parent_module.declare_public("file", file)
+
 def setup_default_runtime():
     active_runtime = Runtime()
 
@@ -92,5 +119,7 @@ def setup_default_runtime():
         "stderr" : _builtin_stderr,
         "rt" : _builtin_runtime
     })
+
+    compose_file_module(__main_module__)
 
     return __main_module__

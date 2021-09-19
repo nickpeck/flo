@@ -1,8 +1,10 @@
 import asyncio
+import os
 from typing import Any
 import unittest
 
-from flo import AsyncStream, Subscriber, Module, AsyncManager
+from flo import (AsyncStream, Subscriber, 
+    Module, AsyncManager, Component, compose_file_module)
 from flo.FloListenerImpl import FloListenerImpl
 
 class ParserTests(unittest.TestCase):
@@ -37,12 +39,16 @@ class ParserTests(unittest.TestCase):
         _builtin_runtime = AsyncStream[str]()
         _builtin_runtime.subscribe(active_runtime)
 
+
         __main_module__ = Module("main", **{
             "stdout" : _builtin_stdout,
             "stderr" : _builtin_stderr,
             "rt" : _builtin_runtime
         })
-        
+
+        # TODO refactor this so we can mock file interactions using stringIO
+        compose_file_module(__main_module__)
+
         return __main_module__
 
     def test_hello_world(self):
@@ -513,6 +519,22 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['hello imported module!']
+
+    def test_file_reader_builtin(self):
+        with open("test.log", "w") as f:
+            f.write("hello\nfrom logfile!")
+        try:
+            src = """
+                module main {
+                    //dec reader : file.reader
+                    file.reader.readlines -> stdout
+                    file.reader.path <- "test.log"
+                }
+            """
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+            assert self.stdout == ["hello\n", "from logfile!"]
+        finally:
+            os.remove("test.log")
 
 if __name__ == "__main__":
     unittest.main()
