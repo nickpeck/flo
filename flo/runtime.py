@@ -90,7 +90,35 @@ def add_file_reader(parent_module):
 
 def add_file_writer(parent_module):
     writer = Component("writer")
+    path = AsyncStream[str]()
+    writer.declare_public("path", path)
+
     parent_module.declare_public("writer", writer)
+    write_append_stream = AsyncStream[str]()
+    writer.declare_public("append", write_append_stream)
+    def _write_append(data):
+        _path = path.peek()
+        if _path is not None:
+            with open(_path, "a") as f:
+                f.write(data)
+    write_append_stream.subscribe(
+        Subscriber(
+            on_next = lambda data: _write_append(data)
+        )
+    )
+
+    write_stream = AsyncStream[str]()
+    writer.declare_public("write", write_stream)
+    def _write(data):
+        _path = path.peek()
+        if _path is not None:
+            with open(_path, "w") as f:
+                f.write(data)
+    write_stream.subscribe(
+        Subscriber(
+            on_next = lambda data: _write(data)
+        )
+    )
 
 def compose_file_module(parent_module):
     file = Module("file")
@@ -111,10 +139,15 @@ def setup_default_runtime():
         Subscriber[str](
             on_next = lambda s : sys.stderr.write(str(s) + "\n")))
 
+    #_builtin_stdin = AsyncStream[Any]()
+    # for line in sys.stdin:
+        # _builtin_stdin.write(line)
+
     _builtin_runtime = AsyncStream[int]()
     _builtin_runtime.subscribe(active_runtime)
 
     __main_module__ = Module("main", **{
+        # "stdin": _builtin_stdin,
         "stdout" : _builtin_stdout,
         "stderr" : _builtin_stderr,
         "rt" : _builtin_runtime

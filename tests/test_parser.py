@@ -536,5 +536,41 @@ class ParserTests(unittest.TestCase):
         finally:
             os.remove("test.log")
 
+    def test_file_writer_builtin(self):
+        with open("test.log", "w") as f:
+            f.write("")
+        try:
+            src = """
+                module main {
+                    dec writer : file.writer
+                    writer.path <- "test.log"
+                    writer.write <- "hello, world!"
+                }
+            """
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+            with open("test.log", "r") as f:
+                contents = f.read()
+                assert contents == "hello, world!"
+        finally:
+            os.remove("test.log")
+
+    def test_file_write_append_builtin(self):
+        with open("test.log", "w") as f:
+            f.write("line 1")
+        try:
+            src = """
+                module main {
+                    dec writer : file.writer
+                    writer.path <- "test.log"
+                    writer.append <- "\nline 2"
+                }
+            """
+            main_module = FloListenerImpl.loadString(src, self.runtime)
+            with open("test.log", "r") as f:
+                contents = f.read()
+                assert contents == "line 1\nline 2"
+        finally:
+            os.remove("test.log")
+
 if __name__ == "__main__":
     unittest.main()
