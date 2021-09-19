@@ -80,7 +80,7 @@ import_statement:
 	(AS ID)?;
 
 simpleDeclaration:
-	((PUBLIC)? ID (COLON ID)?)
+	((PUBLIC)? ID (COLON ID (DOT ID)*)?)
 ;
 
 computedDeclaration:

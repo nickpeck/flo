@@ -526,9 +526,9 @@ class ParserTests(unittest.TestCase):
         try:
             src = """
                 module main {
-                    //dec reader : file.reader
-                    file.reader.readlines -> stdout
-                    file.reader.path <- "test.log"
+                    dec reader : file.reader
+                    reader.readlines -> stdout
+                    reader.path <- "test.log"
                 }
             """
             main_module = FloListenerImpl.loadString(src, self.runtime)

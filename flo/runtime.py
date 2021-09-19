@@ -93,7 +93,7 @@ def add_file_writer(parent_module):
     parent_module.declare_public("writer", writer)
 
 def compose_file_module(parent_module):
-    file = Component("file")
+    file = Module("file")
     add_file_reader(file)
     add_file_writer(file)
     parent_module.declare_public("file", file)

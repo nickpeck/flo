@@ -269,23 +269,46 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
-        _type = None
+        children = [c.getText() for c in ctx.children]
+        is_public = False
         if ctx.children[0].getText() == "public":
-            if len(ctx.children) == 4:
-                _type = ctx.children[3].getText()
-            _id = ctx.children[1].getText()
-            stream = AsyncStream[_type]() # type: ignore
-            self.scope.declare_public(_id, stream)
+            is_public = True
+            # dec public name : type
+            name = ctx.children[1].getText()
         else:
-            if len(ctx.children) == 3:
-                _type = ctx.children[2].getText()
-            _id = ctx.children[0].getText()
-            if _type in self.scope.locals and isinstance(self.scope.get_member(_type), Component):
-                comp_instance = self.scope.get_member(_type)
-                self.scope.declare_local(_id, comp_instance)
-            else:
-                stream = AsyncStream[_type]() # type: ignore
-                self.scope.declare_local(_id, stream)
+            # dec name : type
+            name = ctx.children[0].getText()
+
+        # resolve the type, if specified.
+        if ":" in children:
+            right_expr = None
+            _scope = self.scope
+            i = children.index(":")
+            type_parts = children[i+1:]
+            try:
+                type_parts.remove(".")
+            except ValueError: 
+                pass
+            for t in type_parts:
+                # type is a dot-lookup ie dec f : file.reader
+                if t in _scope.locals:
+                    if isinstance(_scope.get_member(t), Component):
+                        right_expr = _scope.get_member(t)
+                        # its a component, so create a new instance
+                        _scope = right_expr.duplicate()
+                    elif isinstance(_scope.get_member(t), Module):
+                        right_expr = _scope.get_member(t)
+                        _scope = right_expr
+                else:
+                    right_expr = AsyncStream[t]() # type: ignore
+        else:
+            # If no type, its just an untyped stream
+            right_expr = AsyncStream()
+
+        if is_public:
+            self.scope.declare_public(name, right_expr)
+        else:
+            self.scope.declare_local(name, right_expr)
 
     # Exit a parse tree produced by FloParser#computedDeclaration.
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
