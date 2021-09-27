@@ -208,6 +208,11 @@ class AsyncStream(Generic[T]):
 
         for dep in dependants:
             dep.subscribe(subscriber)
+
+        # compute initial value, if it can be resolved
+        if None not in [dep.peek() for dep in dependants]:
+            output_stream.write(bound_func())
+
         return output_stream
 
 class ComputedMapped(AsyncStream):

@@ -114,5 +114,20 @@ class AsyncStreamTests(unittest.TestCase):
         # nb the result is only that of the last 'state' (5 + 6)
         assert result == 11
 
+    def test_computed_default_value(self):
+        stream1 = AsyncStream[int](3)
+        stream2 = AsyncStream[int](4)
+
+        stream3 = AsyncStream.computed(
+            lambda a,b: a+b, [stream1, stream2])
+
+        AsyncManager.get_instance().run()
+        result = stream3.peek()
+        assert result == 7
+
+    def test_stream_from_false(self):
+        stream1 = AsyncStream(False)
+        assert stream1.peek() == False
+
 if __name__ == "__main__":
     unittest.main()
