@@ -75,7 +75,7 @@ class AsyncStream(Generic[T]):
         an initial value of Type T
         """
         self._v = None
-        if head:
+        if head is not None:
             self._v = head
         self._subscribers = []
         if dependants is None:
