@@ -89,7 +89,9 @@ class AsyncStream(Generic[T]):
         self._dependants = self._dependants + child_dependants
 
     def __str__(self):
-        return "<AsyncStream {}>".format(self._v)
+        if isinstance(self._v, str):
+            return "'{}'".format(self._v)
+        return "{}".format(self._v)
 
     def __repr__(self):
         return str(self)
@@ -185,10 +187,14 @@ class AsyncStream(Generic[T]):
         emits a new value, the computed result is written to the
         resulting stream.
         """
+        def _unwrap(i):
+            while isinstance(i, AsyncStream):
+                i = i.peek()
+            return i
         def _bind(func, *args, **kwargs):
             @wraps(func)
             def inner(*_args, **_kwags):
-                _args_ = [a.peek() for a in args]
+                _args_ = [_unwrap(a) for a in args]
                 return func(*_args_, *_args, **kwargs, **_kwags)
             return inner
 
@@ -226,7 +232,16 @@ class ComputedMapped(AsyncStream):
         """Write a new value to this stream, and await the
         notification of all subscribers.
         """
-        self._v = self.func(item)
+        def _unwrap(i):
+            while isinstance(i, AsyncStream):
+                i = i.peek()
+            return i
+
+        arg = item.peek()
+        if isinstance(arg, tuple):
+            self._v = self.func(*[_unwrap(a) for a in arg])
+        else:
+            self._v = self.func(_unwrap(arg))
         _head = self._v
 
         if self._subscribers != []:

@@ -1,2 +1,2 @@
 def myfunc(*args):
-    return " ".join(*args)
+    return " ".join(args)

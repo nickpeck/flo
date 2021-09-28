@@ -207,6 +207,21 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["(42, 'Hello world', True)"]
 
+    def test_declared_vars_are_streams(self):
+        src = """
+            module main {
+                dec x = 1
+                dec public y = 2
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        x_scope, x = self.runtime.locals["x"]
+        assert x_scope == 'local'
+        assert x.peek() == 1
+        y_scope, y = self.runtime.locals["y"]
+        assert y_scope == 'public'
+        assert y.peek() == 2
+
     def test_typings_are_optional(self):
         src = """
             module main {

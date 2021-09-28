@@ -78,7 +78,7 @@ def add_file_reader(parent_module):
     reader_stream = AsyncStream[str]()
     reader.declare_public("readlines", reader_stream)
     def _reader(path):
-        with open(path, "r") as f:
+        with open(path.peek(), "r") as f:
             for line in f:
                 reader_stream.write(line)
     path.subscribe(
@@ -99,8 +99,8 @@ def add_file_writer(parent_module):
     def _write_append(data):
         _path = path.peek()
         if _path is not None:
-            with open(_path, "a") as f:
-                f.write(data)
+            with open(_path.peek(), "a") as f:
+                f.write(data.peek())
     write_append_stream.subscribe(
         Subscriber(
             on_next = lambda data: _write_append(data)
@@ -112,8 +112,8 @@ def add_file_writer(parent_module):
     def _write(data):
         _path = path.peek()
         if _path is not None:
-            with open(_path, "w") as f:
-                f.write(data)
+            with open(_path.peek(), "w") as f:
+                f.write(data.peek())
     write_stream.subscribe(
         Subscriber(
             on_next = lambda data: _write(data)

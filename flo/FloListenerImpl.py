@@ -189,20 +189,20 @@ class FloListenerImpl(FloListener):
             value = int(ctx.children[0].getText())
         except ValueError:
             value = float(ctx.children[0].getText()) # type: ignore
-        self.register.append(value)
+        self.register.append(AsyncStream(value))
 
     # Enter a parse tree produced by FloParser#string.
     def enterString(self, ctx:FloParser.StringContext):
         value = ctx.children[0].getText()[1:-1]
-        self.register.append(value)
+        self.register.append(AsyncStream(value))
 
     # Enter a parse tree produced by FloParser#bool.
     def enterBool(self, ctx:FloParser.BoolContext):
         value = ctx.children[0].getText()
         if value == 'true':
-            self.register.append(True)
+            self.register.append(AsyncStream(True))
         elif value == 'false':
-            self.register.append(False)
+            self.register.append(AsyncStream(False))
 
     # Enter a parse tree produced by FloParser#getAttrib.
     def enterGetAttrib(self, ctx:FloParser.GetAttribContext):
@@ -232,9 +232,9 @@ class FloListenerImpl(FloListener):
             # its an int
             rights[i] = int(rights[i])
         left = self.register.pop(-1)
-        value = left[rights[0]]
+        value = left.peek()[rights[0]]
         for right in rights[1:]:
-            value = value[right]
+            value = value.peek()[right]
         self.register.append(value)
 
     # Exit a parse tree produced by FloParser#getAttrib.
@@ -480,7 +480,7 @@ class FloListenerImpl(FloListener):
     def exitTuple(self, ctx:FloParser.TupleContext):
         tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","],
             [c.getText() for c in ctx.children])))
-        _tuple = tuple(self.register[-tuple_length:])
+        _tuple = AsyncStream(tuple(self.register[-tuple_length:]))
         self.register = self.register[:-tuple_length] + [_tuple]
 
     # Exit a parse tree produced by FloParser#json.
@@ -494,7 +494,7 @@ class FloListenerImpl(FloListener):
             key = _children.pop()[1:-1]
             value = self.register.pop(i)
             obj[key] = value
-        self.register.append(obj)
+        self.register.append(AsyncStream(obj))
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
