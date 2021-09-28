@@ -237,7 +237,7 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["3", "6"]
 
-    def test_computed_dependenciesw_indexing(self):
+    def test_computed_dependencies_w_indexing(self):
         src = """
             module main {
                 dec x = (1,2)

@@ -232,10 +232,21 @@ class FloListenerImpl(FloListener):
             # its an int
             rights[i] = int(rights[i])
         left = self.register.pop(-1)
-        value = left.peek()[rights[0]]
-        for right in rights[1:]:
-            value = value.peek()[right]
-        self.register.append(value)
+        def _unwrap(i):
+            while isinstance(i, AsyncStream):
+                i = i.peek()
+            return i
+        def _index(l):
+            nonlocal rights
+            value = _unwrap(left)[rights[0]]
+            for right in rights[1:]:
+                value = _unwrap(value)[right]
+            return value
+        computed = AsyncStream.computed(
+            _index,
+            [left]
+        )
+        self.register.append(computed)
 
     # Exit a parse tree produced by FloParser#getAttrib.
     def exitGetAttrib(self, ctx:FloParser.GetAttribContext):
@@ -480,7 +491,7 @@ class FloListenerImpl(FloListener):
     def exitTuple(self, ctx:FloParser.TupleContext):
         tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","],
             [c.getText() for c in ctx.children])))
-        _tuple = AsyncStream(tuple(self.register[-tuple_length:]))
+        _tuple = AsyncStream[tuple](tuple(self.register[-tuple_length:]))
         self.register = self.register[:-tuple_length] + [_tuple]
 
     # Exit a parse tree produced by FloParser#json.

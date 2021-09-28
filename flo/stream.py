@@ -228,7 +228,7 @@ class ComputedMapped(AsyncStream):
         super().__init__(head, dependants)
         self.func = func
 
-    def write(self, item: T) -> AsyncStream[T]:
+    def write(self, item: AsyncStream[T]) -> AsyncStream[T]:
         """Write a new value to this stream, and await the
         notification of all subscribers.
         """
