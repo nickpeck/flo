@@ -222,6 +222,37 @@ class ParserTests(unittest.TestCase):
         assert y_scope == 'public'
         assert y.peek() == 2
 
+    def test_computed_dependencies(self):
+        src = """
+            module main {
+                dec x = 1
+                dec y = x + 2
+                sync {
+                    stdout <- y
+                    x <- 4
+                    stdout <- y
+                }
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["3", "6"]
+
+    def test_computed_dependenciesw_indexing(self):
+        src = """
+            module main {
+                dec x = (1,2)
+                dec y = x[1] // indexes should be computed
+                sync {
+                    stdout <- y
+                    x <- (3,4)
+                    stdout <- y
+                }
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["2", "4"]
+
+
     def test_typings_are_optional(self):
         src = """
             module main {
