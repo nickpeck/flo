@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from functools import wraps
-from typing import TypeVar, Generic, Callable, Optional, List, Any
+from typing import TypeVar, Generic, Callable, Optional, List, Any, Union
 
 class AsyncManager:
     """Singleton instance that allows us to enqueue coroutines
@@ -187,14 +187,14 @@ class AsyncStream(Generic[T]):
         emits a new value, the computed result is written to the
         resulting stream.
         """
-        def _unwrap(i):
+        def unwrap(i):
             while isinstance(i, AsyncStream):
                 i = i.peek()
             return i
         def _bind(func, *args, **kwargs):
             @wraps(func)
             def inner(*_args, **_kwags):
-                _args_ = [_unwrap(a) for a in args]
+                _args_ = [unwrap(a) for a in args]
                 return func(*_args_, *_args, **kwargs, **_kwags)
             return inner
 
@@ -232,16 +232,11 @@ class ComputedMapped(AsyncStream):
         """Write a new value to this stream, and await the
         notification of all subscribers.
         """
-        def _unwrap(i):
-            while isinstance(i, AsyncStream):
-                i = i.peek()
-            return i
-
         arg = item.peek()
         if isinstance(arg, tuple):
-            self._v = self.func(*[_unwrap(a) for a in arg])
+            self._v = self.func(*[unwrap(a) for a in arg])
         else:
-            self._v = self.func(_unwrap(arg))
+            self._v = self.func(unwrap(arg))
         _head = self._v
 
         if self._subscribers != []:
@@ -249,3 +244,8 @@ class ComputedMapped(AsyncStream):
                 AsyncManager.get_instance().enqueue_async(
                     subscr.on_next(_head))
         return self
+
+def unwrap(i: Union[AsyncStream|Any]):
+    while isinstance(i, AsyncStream):
+        i = i.peek()
+    return i

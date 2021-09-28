@@ -16,7 +16,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager
+from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager, unwrap
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -232,15 +232,12 @@ class FloListenerImpl(FloListener):
             # its an int
             rights[i] = int(rights[i])
         left = self.register.pop(-1)
-        def _unwrap(i):
-            while isinstance(i, AsyncStream):
-                i = i.peek()
-            return i
+
         def _index(l):
             nonlocal rights
-            value = _unwrap(left)[rights[0]]
+            value = unwrap(left)[rights[0]]
             for right in rights[1:]:
-                value = _unwrap(value)[right]
+                value = unwrap(value)[right]
             return value
         computed = AsyncStream.computed(
             _index,
