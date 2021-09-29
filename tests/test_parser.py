@@ -495,6 +495,20 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ['1']
 
+    def test_mix_dot_lookup_and_indexing(self):
+        src = """
+            module main {
+                component c {
+                    dec public d = (1,2)
+                }
+                dec a : c
+                dec b = a.d[1]
+                stdout <- b
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ['2']
+
     def test_components(self):
         src = """
             module main {

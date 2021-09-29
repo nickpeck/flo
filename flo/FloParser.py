@@ -58,13 +58,13 @@ def serializedATN():
         buf.write("E\3\2\2\2EF\3\2\2\2FG\7!\2\2GI\3\2\2\2H9\3\2\2\2H>\3\2")
         buf.write("\2\2IL\3\2\2\2JL\5\4\3\2K\64\3\2\2\2K\66\3\2\2\2K\67\3")
         buf.write("\2\2\2K8\3\2\2\2KH\3\2\2\2KJ\3\2\2\2L^\3\2\2\2MP\f\6\2")
-        buf.write("\2NO\7\26\2\2OQ\5\2\2\2PN\3\2\2\2QR\3\2\2\2RP\3\2\2\2")
-        buf.write("RS\3\2\2\2S]\3\2\2\2TX\f\5\2\2UV\7\36\2\2VW\t\2\2\2WY")
-        buf.write("\7\37\2\2XU\3\2\2\2YZ\3\2\2\2ZX\3\2\2\2Z[\3\2\2\2[]\3")
-        buf.write("\2\2\2\\M\3\2\2\2\\T\3\2\2\2]`\3\2\2\2^\\\3\2\2\2^_\3")
-        buf.write("\2\2\2_\3\3\2\2\2`^\3\2\2\2ab\7\34\2\2bc\7,\2\2cd\7\27")
-        buf.write("\2\2dk\5\2\2\2ef\7\"\2\2fg\7,\2\2gh\7\27\2\2hj\5\2\2\2")
-        buf.write("ie\3\2\2\2jm\3\2\2\2ki\3\2\2\2kl\3\2\2\2ln\3\2\2\2mk\3")
+        buf.write("\2NO\7\26\2\2OQ\7.\2\2PN\3\2\2\2QR\3\2\2\2RP\3\2\2\2R")
+        buf.write("S\3\2\2\2S]\3\2\2\2TX\f\5\2\2UV\7\36\2\2VW\t\2\2\2WY\7")
+        buf.write("\37\2\2XU\3\2\2\2YZ\3\2\2\2ZX\3\2\2\2Z[\3\2\2\2[]\3\2")
+        buf.write("\2\2\\M\3\2\2\2\\T\3\2\2\2]`\3\2\2\2^\\\3\2\2\2^_\3\2")
+        buf.write("\2\2_\3\3\2\2\2`^\3\2\2\2ab\7\34\2\2bc\7,\2\2cd\7\27\2")
+        buf.write("\2dk\5\2\2\2ef\7\"\2\2fg\7,\2\2gh\7\27\2\2hj\5\2\2\2i")
+        buf.write("e\3\2\2\2jm\3\2\2\2ki\3\2\2\2kl\3\2\2\2ln\3\2\2\2mk\3")
         buf.write("\2\2\2no\7\35\2\2o\5\3\2\2\2pq\7(\2\2qv\7.\2\2rs\7\26")
         buf.write("\2\2su\7.\2\2tr\3\2\2\2ux\3\2\2\2vt\3\2\2\2vw\3\2\2\2")
         buf.write("w\u008e\3\2\2\2xv\3\2\2\2yz\7)\2\2z\177\7.\2\2{|\7\26")
@@ -418,17 +418,19 @@ class FloParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
-        def atom(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(FloParser.AtomContext)
-            else:
-                return self.getTypedRuleContext(FloParser.AtomContext,i)
+        def atom(self):
+            return self.getTypedRuleContext(FloParser.AtomContext,0)
 
         def DOT(self, i:int=None):
             if i is None:
                 return self.getTokens(FloParser.DOT)
             else:
                 return self.getToken(FloParser.DOT, i)
+        def ID(self, i:int=None):
+            if i is None:
+                return self.getTokens(FloParser.ID)
+            else:
+                return self.getToken(FloParser.ID, i)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterGetAttrib" ):
@@ -619,7 +621,7 @@ class FloParser ( Parser ):
                                 self.state = 76
                                 self.match(FloParser.DOT)
                                 self.state = 77
-                                self.atom(0)
+                                self.match(FloParser.ID)
 
                             else:
                                 raise NoViableAltException(self)

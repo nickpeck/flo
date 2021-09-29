@@ -210,7 +210,9 @@ class FloListenerImpl(FloListener):
             return
         self._is_get_attrib = True
         left = ctx.children[0].getText()
-        rights = ctx.children[2].getText().split(".")
+        rights = list(filter(
+            lambda c: c != ".", 
+            [c.getText() for c in ctx.children[2:]]))
         right = rights[0]
         returnval = self.scope.get_member(left).get_member(right)
         for r in rights[1:]:
