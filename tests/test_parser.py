@@ -3,7 +3,7 @@ import os
 from typing import Any
 import unittest
 
-from flo import (AsyncStream, Subscriber, 
+from flo import (AsyncObservable, Subscriber, 
     Module, AsyncManager, Component, compose_file_module)
 from flo.FloListenerImpl import FloListenerImpl
 
@@ -20,23 +20,23 @@ class ParserTests(unittest.TestCase):
 
     def _setup_default_runtime(self):
         def _unwrap(i):
-            while isinstance(i, AsyncStream):
+            while isinstance(i, AsyncObservable):
                 i = i.peek()
             return str(i)
 
-        active_runtime = AsyncStream[str]
+        active_runtime = AsyncObservable[str]
 
-        _builtin_stdout = AsyncStream[Any]()
+        _builtin_stdout = AsyncObservable[Any]()
         _builtin_stdout.subscribe(
             Subscriber[str](
                 on_next = lambda s : self.stdout.append(_unwrap(s))))
 
-        _builtin_stderr = AsyncStream[Any]()
+        _builtin_stderr = AsyncObservable[Any]()
         _builtin_stderr.subscribe(
             Subscriber[str](
                 on_next = lambda s : self.stderr.append(_unwrap(s))))
 
-        _builtin_runtime = AsyncStream[str]()
+        _builtin_runtime = AsyncObservable[str]()
         _builtin_runtime.subscribe(active_runtime)
 
 
@@ -207,7 +207,7 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["(42, 'Hello world', True)"]
 
-    def test_declared_vars_are_streams(self):
+    def test_declared_vars_are_observables(self):
         src = """
             module main {
                 dec x = 1

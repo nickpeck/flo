@@ -16,7 +16,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . stream import AsyncStream, Subscriber, ComputedMapped, AsyncManager, unwrap
+from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -48,21 +48,21 @@ class FloListenerImpl(FloListener):
     def loadModule(name, main_module=None):
         """Load a module from a given file name
         """
-        input_stream = FileStream(name)
-        return FloListenerImpl._parse_module(input_stream, main_module)
+        input_observable = FileStream(name)
+        return FloListenerImpl._parse_module(input_observable, main_module)
 
     @staticmethod
     def loadString(code, main_module=None):
         """Load a module from direct code string input
         """
-        input_stream = InputStream(code)
-        return FloListenerImpl._parse_module(input_stream, main_module)
+        input_observable = InputStream(code)
+        return FloListenerImpl._parse_module(input_observable, main_module)
 
     @staticmethod
-    def _parse_module(input_stream, main_module):
-        lexer = FloLexer(input_stream)
-        stream = CommonTokenStream(lexer)
-        parser = FloParser(stream)
+    def _parse_module(input_observable, main_module):
+        lexer = FloLexer(input_observable)
+        observable = CommonTokenStream(lexer)
+        parser = FloParser(observable)
         tree = parser.module()
         listener = FloListenerImpl(main_module)
         walker = ParseTreeWalker()
@@ -91,10 +91,10 @@ class FloListenerImpl(FloListener):
         while True:
             buffer.append(input(prompt))
             code = " ".join(buffer)
-            input_stream = InputStream(code)
-            lexer = FloLexer(input_stream)
-            stream = CommonTokenStream(lexer)
-            parser = FloParser(stream)
+            input_observable = InputStream(code)
+            lexer = FloLexer(input_observable)
+            observable = CommonTokenStream(lexer)
+            parser = FloParser(observable)
             parser.removeErrorListeners()
             parser.addErrorListener(REPLErrorListener())
             try:
@@ -152,13 +152,13 @@ class FloListenerImpl(FloListener):
         if len(deps) == 1:
             # ie some right assoc operators such as 'not x')
             right_expr = deps[0]
-            if not isinstance(right_expr, AsyncStream):
-                # not a stream so just go ahead and compute the value
+            if not isinstance(right_expr, AsyncObservable):
+                # not a observable so just go ahead and compute the value
                 self.register = self.register[:-1]
                 self.register.append(func(right_expr))
                 return
             # otherwise, set up a computed to represent all future states
-            computed = AsyncStream.computed(
+            computed = AsyncObservable.computed(
                 func, # type: ignore
                 [right_expr]
             )
@@ -166,16 +166,17 @@ class FloListenerImpl(FloListener):
             # binary forms... 'x + y' 'x >= y'
             left_expr = deps[0]
             right_expr = deps[1]
-            if not isinstance(left_expr, AsyncStream) and not isinstance(right_expr, AsyncStream):
-                # neither are streams so just go ahead and compute the value
+            if not isinstance(left_expr, AsyncObservable) \
+                and not isinstance(right_expr, AsyncObservable):
+                # neither are observables so just go ahead and compute the value
                 self.register = self.register[:-2]
                 self.register.append(func(*deps))
                 return
-            if not isinstance(left_expr, AsyncStream):
-                left_expr = AsyncStream(left_expr)
-            if not isinstance(right_expr, AsyncStream):
-                right_expr = AsyncStream(right_expr)
-            computed = AsyncStream.computed(
+            if not isinstance(left_expr, AsyncObservable):
+                left_expr = AsyncObservable(left_expr)
+            if not isinstance(right_expr, AsyncObservable):
+                right_expr = AsyncObservable(right_expr)
+            computed = AsyncObservable.computed(
                 func, # type: ignore
                 [left_expr, right_expr]
             )
@@ -189,20 +190,20 @@ class FloListenerImpl(FloListener):
             value = int(ctx.children[0].getText())
         except ValueError:
             value = float(ctx.children[0].getText()) # type: ignore
-        self.register.append(AsyncStream(value))
+        self.register.append(AsyncObservable(value))
 
     # Enter a parse tree produced by FloParser#string.
     def enterString(self, ctx:FloParser.StringContext):
         value = ctx.children[0].getText()[1:-1]
-        self.register.append(AsyncStream(value))
+        self.register.append(AsyncObservable(value))
 
     # Enter a parse tree produced by FloParser#bool.
     def enterBool(self, ctx:FloParser.BoolContext):
         value = ctx.children[0].getText()
         if value == 'true':
-            self.register.append(AsyncStream(True))
+            self.register.append(AsyncObservable(True))
         elif value == 'false':
-            self.register.append(AsyncStream(False))
+            self.register.append(AsyncObservable(False))
 
     # Enter a parse tree produced by FloParser#getAttrib.
     def enterGetAttrib(self, ctx:FloParser.GetAttribContext):
@@ -241,7 +242,7 @@ class FloListenerImpl(FloListener):
             for right in rights[1:]:
                 value = unwrap(value)[right]
             return value
-        computed = AsyncStream.computed(
+        computed = AsyncObservable.computed(
             _index,
             [left]
         )
@@ -269,8 +270,8 @@ class FloListenerImpl(FloListener):
             c = Component(libname)
             for name, obj in inspect.getmembers(imported):
                 if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
-                    wrapper_stream = ComputedMapped(None, None, obj) # type: ignore
-                    c.declare_public(name, wrapper_stream)
+                    wrapper_observable = ComputedMapped(None, None, obj) # type: ignore
+                    c.declare_public(name, wrapper_observable)
             self.scope.declare_local(libname, c)
 
     # Exit a parse tree produced by FloParser#import_statement.
@@ -310,10 +311,10 @@ class FloListenerImpl(FloListener):
                         right_expr = _scope.get_member(t)
                         _scope = right_expr
                 else:
-                    right_expr = AsyncStream[t]() # type: ignore
+                    right_expr = AsyncObservable[t]() # type: ignore
         else:
-            # If no type, its just an untyped stream
-            right_expr = AsyncStream()
+            # If no type, its just an untyped observable
+            right_expr = AsyncObservable()
 
         if is_public:
             self.scope.declare_public(name, right_expr)
@@ -359,7 +360,7 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression_filter.
     def exitCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
         _id = ctx.children[0].getText()
-        output = AsyncStream[Any]()
+        output = AsyncObservable[Any]()
         _input = self.scope.get_member(_id)
         def f(truthy):
             nonlocal output
@@ -490,7 +491,7 @@ class FloListenerImpl(FloListener):
     def exitTuple(self, ctx:FloParser.TupleContext):
         tuple_length = len(list(filter(lambda c: c not in  ["(", ")", ","],
             [c.getText() for c in ctx.children])))
-        _tuple = AsyncStream[tuple](tuple(self.register[-tuple_length:]))
+        _tuple = AsyncObservable[tuple](tuple(self.register[-tuple_length:]))
         self.register = self.register[:-tuple_length] + [_tuple]
 
     # Exit a parse tree produced by FloParser#json.
@@ -504,7 +505,7 @@ class FloListenerImpl(FloListener):
             key = _children.pop()[1:-1]
             value = self.register.pop(i)
             obj[key] = value
-        self.register.append(AsyncStream(obj))
+        self.register.append(AsyncObservable(obj))
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):

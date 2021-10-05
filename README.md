@@ -139,7 +139,22 @@ Dictionaries and tuples support simple index lookups (of single values only at p
 ### Operators and Expressions
 Many operators and expressions are borrowed from Python syntax. There are a few differences. Here is a summary:
 ~~~
-TODO!
+a + b // addition
+a - b // subtraction
+a * b // multiplication
+a / b // division
+a % b // modulus
+a > b // greater than
+a < b // less than
+a >= b // greater than or equal to
+a <= b // less than or equal to
+!a // negation (not a)
+a or b // or
+a and b //and
+a -> b // bind a to b (all changes to a are written to b)
+a <- b // put the current value of b in a
+a|a > 5 // filter all future values of a where a is greater than 5
+a & b // join and b (resulting in a new stream)
 ~~~
 
 ### Feedback Loop!

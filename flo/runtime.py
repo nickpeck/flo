@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from typing import Any, Union
 
-from . import AsyncStream, Subscriber
+from . import AsyncObservable, Subscriber
 
 class Module:
     def __init__(self, name, **opts):
@@ -18,11 +18,11 @@ class Module:
             raise Exception("Variable '{}' is already defined".format(name))
 
     def declare_local(self, name: str,
-        attr: Union[AsyncStream, Component, Module]):
+        attr: Union[AsyncObservable, Component, Module]):
         self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
 
-    def declare_public(self, name: str, pipe: AsyncStream):
+    def declare_public(self, name: str, pipe: AsyncObservable):
         self._check_is_not_defined(name)
         self.locals[name] = ("public", pipe)
 
@@ -54,9 +54,9 @@ class Component(Module):
         return "<Component '{}'>".format(self.name)
 
 class Filter(Module):
-    def __init__(self, name, input_stream: AsyncStream):
+    def __init__(self, name, input_observable: AsyncObservable):
         super().__init__("Anonymous Filter on '{}'".format(name))
-        self.declare_public(name, input_stream)
+        self.declare_public(name, input_observable)
 
 
 class Runtime(Subscriber[int]):
@@ -73,14 +73,14 @@ class Runtime(Subscriber[int]):
 
 def add_file_reader(parent_module):
     reader = Component("reader")
-    path = AsyncStream[str]()
+    path = AsyncObservable[str]()
     reader.declare_public("path", path)
-    reader_stream = AsyncStream[str]()
-    reader.declare_public("readlines", reader_stream)
+    reader_observable = AsyncObservable[str]()
+    reader.declare_public("readlines", reader_observable)
     def _reader(path):
         with open(path.peek(), "r") as f:
             for line in f:
-                reader_stream.write(line)
+                reader_observable.write(line)
     path.subscribe(
         Subscriber(
             on_next = lambda p: _reader(p)
@@ -90,31 +90,31 @@ def add_file_reader(parent_module):
 
 def add_file_writer(parent_module):
     writer = Component("writer")
-    path = AsyncStream[str]()
+    path = AsyncObservable[str]()
     writer.declare_public("path", path)
 
     parent_module.declare_public("writer", writer)
-    write_append_stream = AsyncStream[str]()
-    writer.declare_public("append", write_append_stream)
+    write_append_observable = AsyncObservable[str]()
+    writer.declare_public("append", write_append_observable)
     def _write_append(data):
         _path = path.peek()
         if _path is not None:
             with open(_path.peek(), "a") as f:
                 f.write(data.peek())
-    write_append_stream.subscribe(
+    write_append_observable.subscribe(
         Subscriber(
             on_next = lambda data: _write_append(data)
         )
     )
 
-    write_stream = AsyncStream[str]()
-    writer.declare_public("write", write_stream)
+    write_observable = AsyncObservable[str]()
+    writer.declare_public("write", write_observable)
     def _write(data):
         _path = path.peek()
         if _path is not None:
             with open(_path.peek(), "w") as f:
                 f.write(data.peek())
-    write_stream.subscribe(
+    write_observable.subscribe(
         Subscriber(
             on_next = lambda data: _write(data)
         )
@@ -129,21 +129,21 @@ def compose_file_module(parent_module):
 def setup_default_runtime():
     active_runtime = Runtime()
 
-    _builtin_stdout = AsyncStream[Any]()
+    _builtin_stdout = AsyncObservable[Any]()
     _builtin_stdout.subscribe(
         Subscriber[str](
             on_next = lambda s : sys.stdout.write(str(s) + "\n")))
 
-    _builtin_stderr = AsyncStream[Any]()
+    _builtin_stderr = AsyncObservable[Any]()
     _builtin_stderr.subscribe(
         Subscriber[str](
             on_next = lambda s : sys.stderr.write(str(s) + "\n")))
 
-    #_builtin_stdin = AsyncStream[Any]()
+    #_builtin_stdin = AsyncObservable[Any]()
     # for line in sys.stdin:
         # _builtin_stdin.write(line)
 
-    _builtin_runtime = AsyncStream[int]()
+    _builtin_runtime = AsyncObservable[int]()
     _builtin_runtime.subscribe(active_runtime)
 
     __main_module__ = Module("main", **{

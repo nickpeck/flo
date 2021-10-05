@@ -53,7 +53,7 @@ class AsyncManager:
 T = TypeVar('T')
 
 class Subscriber(Generic[T]):
-    """AsyncStream Subscriber
+    """AsyncObservable Subscriber
     """
     def __init__(self,
         on_next: Callable[[T], Any] = lambda x : None):
@@ -66,12 +66,12 @@ class Subscriber(Generic[T]):
         await asyncio.coroutine(self._on_next)(value)
         return self
 
-class AsyncStream(Generic[T]):
-    """Presents a stream that allows for asynchronous
-    communication between multiple subscribers.
+class AsyncObservable(Generic[T]):
+    """Presents a observable that allows for asynchronous
+    updates to and from multiple subscribers.
     """
     def __init__(self, head=None, dependants=None):
-        """Initialize a AsyncStream, where head is
+        """Initialize an AsyncObservable, where head is
         an initial value of Type T
         """
         self._v = head
@@ -96,10 +96,10 @@ class AsyncStream(Generic[T]):
     def __repr__(self):
         return str(self)
 
-    def subscribe(self, subscriber: Subscriber[T]) -> AsyncStream[T]:
-        """Add a new subscriber and return the stream.
+    def subscribe(self, subscriber: Subscriber[T]) -> AsyncObservable[T]:
+        """Add a new subscriber and return the observable.
         If the subscriber is already added,
-        then silently return. If this stream has a value,
+        then silently return. If this observable has a value,
         notify the subscriber.
         """
         if subscriber in self._subscribers:
@@ -111,36 +111,36 @@ class AsyncStream(Generic[T]):
         return self
 
     def peek(self) -> Optional[T]:
-        """Return the current value held by the stream, which is of type T,
-        or None, if nothing has been written to the stream yet.
+        """Return the current value held by the observable, which is of type T,
+        or None, if nothing has been written to the observable yet.
         """
         return self._v
 
-    def bind_to(self, other: AsyncStream[T]) -> AsyncStream[T]:
-        """Create a binding between this stream, and another stream
+    def bind_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
+        """Create a binding between this observable, and another observable
         of a similar type, so that the other is subscribed to events
-        in this stream. Return the initial stream.
-        Raise an exception if attempting to bind a stream to itself.
+        in this observable. Return the initial observable.
+        Raise an exception if attempting to bind a observable to itself.
         """
         if other in self._dependants:
             raise RuntimeError("Cannot bind to a dependant")
         if other == self:
-            raise Exception("AsyncStream cannot bind to itself")
+            raise Exception("AsyncObservable cannot bind to itself")
         subscr = Subscriber[T](
             on_next = lambda head: other.write(head)
         )
         self.subscribe(subscr)
         return other
 
-    def join_to(self, other: AsyncStream[T]) -> AsyncStream[T]:
-        """Join this stream to another stream of the same type.
-        The result is a new stream that recieves events from both
-        source streams.
-        Raise an exception if attempting to join a stream to itself.
+    def join_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
+        """Join this observable to another observable of the same type.
+        The result is a new observable that recieves events from both
+        source observables.
+        Raise an exception if attempting to join a observable to itself.
         """
         if other == self:
-            raise Exception("AsyncStream cannot join to itself")
-        joined = AsyncStream[T]()
+            raise Exception("AsyncObservable cannot join to itself")
+        joined = AsyncObservable[T]()
         subscr1 = Subscriber[T](
             on_next = lambda head: joined.write(head)
         )
@@ -151,23 +151,23 @@ class AsyncStream(Generic[T]):
         other.subscribe(subscr2)
         return joined
 
-    def filter(self, expr: Callable[[T], bool]) -> AsyncStream[T]:
-        """Return a new stream that contains events in the source
-        stream, filtered through expr.
+    def filter(self, expr: Callable[[T], bool]) -> AsyncObservable[T]:
+        """Return a new observable that contains events in the source
+        observable, filtered through expr.
         """
-        filtered_stream = AsyncStream[T]()
+        filtered_observable = AsyncObservable[T]()
         def _next(head: T):
             truthy = expr(head)
             if truthy:
-                filtered_stream.write(head)
+                filtered_observable.write(head)
         subscriber = Subscriber[T](
             on_next = lambda x: _next(x)
         )
         self.subscribe(subscriber)
-        return filtered_stream
+        return filtered_observable
 
-    def write(self, item: T) -> AsyncStream[T]:
-        """Write a new value to this stream, and await the
+    def write(self, item: T) -> AsyncObservable[T]:
+        """Write a new value to this observable, and await the
         notification of all subscribers.
         """
         self._v = item
@@ -180,15 +180,15 @@ class AsyncStream(Generic[T]):
         return self
 
     @staticmethod
-    def computed(func: Callable[[List[AsyncStream[T]]], T],
-        dependants: List[AsyncStream[T]]) -> AsyncStream[T]:
-        """Create a new stream that is based on a computed
-        expression of dependent streams, so that when any of dependents
+    def computed(func: Callable[[List[AsyncObservable[T]]], T],
+        dependants: List[AsyncObservable[T]]) -> AsyncObservable[T]:
+        """Create a new observable that is based on a computed
+        expression of dependent observables, so that when any of the dependents
         emits a new value, the computed result is written to the
-        resulting stream.
+        resulting observable.
         """
         def unwrap(i):
-            while isinstance(i, AsyncStream):
+            while isinstance(i, AsyncObservable):
                 i = i.peek()
             return i
         def _bind(func, *args, **kwargs):
@@ -198,15 +198,15 @@ class AsyncStream(Generic[T]):
                 return func(*_args_, *_args, **kwargs, **_kwags)
             return inner
 
-        output_stream = AsyncStream[T](None, dependants)
+        output_observable = AsyncObservable[T](None, dependants)
         bound_func = _bind(func, *dependants)
         def _on_next(val):
             nonlocal bound_func
-            nonlocal output_stream
+            nonlocal output_observable
             nonlocal dependants
             if None in [dep.peek() for dep in dependants]:
                 return
-            output_stream.write(bound_func())
+            output_observable.write(bound_func())
 
         subscriber = Subscriber[T](
             on_next = _on_next
@@ -217,19 +217,22 @@ class AsyncStream(Generic[T]):
 
         # compute initial value, if it can be resolved
         if None not in [dep.peek() for dep in dependants]:
-            output_stream.write(bound_func())
+            output_observable.write(bound_func())
 
-        return output_stream
+        return output_observable
 
-class ComputedMapped(AsyncStream):
+class ComputedMapped(AsyncObservable):
+    """Used as a wrapper to elevate library functions
+    into observables
+    """
     def __init__(self,
         head=None, dependants=None,
         func: Callable[[T], Any] = lambda x : x):
         super().__init__(head, dependants)
         self.func = func
 
-    def write(self, item: AsyncStream[T]) -> AsyncStream[T]:
-        """Write a new value to this stream, and await the
+    def write(self, item: AsyncObservable[T]) -> AsyncObservable[T]:
+        """Write a new value to this observable, and await the
         notification of all subscribers.
         """
         arg = item.peek()
@@ -245,7 +248,7 @@ class ComputedMapped(AsyncStream):
                     subscr.on_next(_head))
         return self
 
-def unwrap(i: Union[AsyncStream|Any]):
-    while isinstance(i, AsyncStream):
+def unwrap(i: Union[AsyncObservable|Any]):
+    while isinstance(i, AsyncObservable):
         i = i.peek()
     return i
