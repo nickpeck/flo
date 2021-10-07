@@ -16,7 +16,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap
+from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ComputedLambda
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -290,6 +290,9 @@ class FloListenerImpl(FloListener):
             # dec name : type
             name = ctx.children[0].getText()
 
+        if name == "?":
+            raise Exception("? is not a valid id")
+
         # resolve the type, if specified.
         if ":" in children:
             right_expr = None
@@ -325,9 +328,13 @@ class FloListenerImpl(FloListener):
     def exitComputedDeclaration(self, ctx:FloParser.ComputedDeclarationContext):
         if ctx.children[0].getText() == "public":
             _id = ctx.children[1].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
             self.scope.declare_public(_id, self.register[0])
         else:
             _id = ctx.children[0].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
             self.scope.declare_local(_id, self.register[0])
         self.register = self.register[1:]
 
@@ -335,19 +342,48 @@ class FloListenerImpl(FloListener):
     def exitFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
         if ctx.children[0].getText() == "public":
             _id = ctx.children[1].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
             self.scope.declare_public(_id, self.register[0])
         else:
             _id = ctx.children[0].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
             self.scope.declare_local(_id, self.register[0])
 
     # Exit a parse tree produced by FloParser#joinDeclaration.
     def exitJoinDeclaration(self, ctx:FloParser.JoinDeclarationContext):
         if ctx.children[0].getText() == "public":
-            id = ctx.children[1].getText()
-            self.scope.declare_public(id, self.register[0])
+            _id = ctx.children[1].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
+            self.scope.declare_public(_id, self.register[0])
         else:
-            id = ctx.children[0].getText()
-            self.scope.declare_local(id, self.register[0])
+            _id = ctx.children[0].getText()
+            if _id == "?":
+                raise Exception("? is not a valid id")
+            self.scope.declare_local(_id, self.register[0])
+
+    # Exit a parse tree produced by FloParser#computedLambdaDeclaration.
+    def enterComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
+        # this is a placeholder for the stream input, that is
+        # only present for the duration of the lambda declaration
+        self.scope.declare_local("?", AsyncObservable())
+
+    # Exit a parse tree produced by FloParser#computedLambdaDeclaration.
+    def exitComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
+        placeholder = self.scope.locals["?"][1]
+        del self.scope.locals["?"]
+        # declare an observable that listens for 
+        _lambda = ComputedLambda(placeholder, self.register[0])
+
+        if ctx.children[0].getText() == "public":
+            _id = ctx.children[1].getText()
+            self.scope.declare_public(_id, _lambda)
+        else:
+            _id = ctx.children[0].getText()
+            self.scope.declare_local(_id, _lambda)
+        self.register = self.register[1:]
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):

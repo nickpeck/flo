@@ -221,6 +221,53 @@ class AsyncObservable(Generic[T]):
 
         return output_observable
 
+class ComputedLambda(AsyncObservable):
+    """Creates an observable that silently applies a modifier to each value
+    written into it and broadcasts this to all subscribers of the stream. 
+    This is analogous to a single input anoymous function.
+    """
+    def __init__(self, 
+        placeholder: AsyncObservable, 
+        computed_delegate: AsyncObservable[T]):
+        """Initialize the ComputedLambda
+        placeholder is an observable that is part of computed_delegate
+        (ie the parameterised input to the expression).
+        computed_delegate, is computed expression that contains placeholder
+        """
+        super().__init__(None, [])
+        self._placeholder = placeholder
+        self._delegate = computed_delegate
+        # The implementation works by delegating all public functions
+        # to the delegate, apart from .write(v), which writes to 
+        # the placeholder instead.
+        # computed_delegate is then automatically updated.
+
+    def write(self, item: AsyncObservable[T]) -> AsyncObservable[T]:
+        self._placeholder.write(item)
+        return self
+
+    def peek(self) -> Optional[T]:
+        """Return the current value held by the observable, which is of type T,
+        or None, if nothing has been written to the observable yet.
+        """
+        return self._delegate.peek()
+
+    def subscribe(self, subscriber: Subscriber[T]) -> AsyncObservable[T]:
+        self._delegate.subscribe(subscriber)
+        return self
+
+    def bind_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
+        self._delegate.bind_to(other)
+        return other
+
+    def join_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
+        joined = self._delegate.join_to(other)
+        return joined
+
+    def filter(self, expr: Callable[[T], bool]) -> AsyncObservable[T]:
+        filtered = self._delegate.filter(expr)
+        return filtered
+
 class ComputedMapped(AsyncObservable):
     """Used as a wrapper to elevate library functions
     into observables

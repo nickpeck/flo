@@ -30,6 +30,7 @@ OR: 'or';
 AND: 'and';
 FILTER: '|';
 JOIN: '&';
+PLACEHOLDER: '?';
 
 //punctuation
 LCB     :       '{';
@@ -54,14 +55,14 @@ SYNC: 'sync';
 //primitaves
 STRING:('"' ~('"')* '"') | ('\'' ~('\'')* '\'');
 BOOL:'true' | 'false';
-ID :('a'..'z'|'A'..'Z'|'0'..'9'|'_')+;
+ID: ('a'..'z'|'A'..'Z'|'0'..'9'|'_')+ ;
 SPACE: ' ';
 //ERR_CHAR : . ;
 
 atom: STRING #string 
 	| NUMBER #number
 	| BOOL #bool
-	| ID #id
+	| (ID | PLACEHOLDER) #id
 	| atom (DOT ID)+ #getAttrib
 	| atom (LSB (NUMBER|STRING) RSB)+ #index
 	| ( LPAREN compound_expression COMMA RPAREN 
@@ -84,6 +85,10 @@ computedDeclaration:
 	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression)
 ;
 
+computedLambdaDeclaration:
+	((PUBLIC)? ID (COLON ID)? COLON COLON compound_expression)
+;
+
 filterDeclaration:
 	((PUBLIC)? ID (COLON ID)? EQUALS compound_expression_filter)
 ;
@@ -99,8 +104,9 @@ declaration:
 			| computedDeclaration
 			| filterDeclaration
 			| joinDeclaration
+			| computedLambdaDeclaration
 		)+ RCB
-	| (simpleDeclaration | computedDeclaration | filterDeclaration)
+	| (simpleDeclaration | computedDeclaration | filterDeclaration | joinDeclaration | computedLambdaDeclaration)
 	);
 
 compound_expression_join

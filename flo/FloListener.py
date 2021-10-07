@@ -116,6 +116,15 @@ class FloListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by FloParser#computedLambdaDeclaration.
+    def enterComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
+        pass
+
+    # Exit a parse tree produced by FloParser#computedLambdaDeclaration.
+    def exitComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
+        pass
+
+
     # Enter a parse tree produced by FloParser#filterDeclaration.
     def enterFilterDeclaration(self, ctx:FloParser.FilterDeclarationContext):
         pass
