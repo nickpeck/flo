@@ -270,7 +270,7 @@ class ParserTests(unittest.TestCase):
     def test_computed_lambda_style_syntax(self):
         src = """
             module main {
-                dec { x :: (?[0]) <- (?[1]) }
+                dec { x :: ?[0] <- ?[1] }
                 sync {
                     x <- (stdout, 1)
                     x <- (stdout, 2)

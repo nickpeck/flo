@@ -221,51 +221,44 @@ class AsyncObservable(Generic[T]):
 
         return output_observable
 
-class ComputedLambda(AsyncObservable):
-    """Creates an observable that silently applies a modifier to each value
-    written into it and broadcasts this to all subscribers of the stream. 
-    This is analogous to a single input anoymous function.
+class ReadWriteDelegator(AsyncObservable):
+    """Construct an observable that delagtes both writes to another observable
+    and reads to a computed observable into which the write
+    delegate is bound.
+    The outward effect, (to the consumer) is of a single observable
+    which emits a modified response to each value written to it.
     """
     def __init__(self, 
-        placeholder: AsyncObservable, 
-        computed_delegate: AsyncObservable[T]):
-        """Initialize the ComputedLambda
-        placeholder is an observable that is part of computed_delegate
-        (ie the parameterised input to the expression).
-        computed_delegate, is computed expression that contains placeholder
-        """
+        write_delegate: AsyncObservable, 
+        read_delegate: AsyncObservable[T]):
+
         super().__init__(None, [])
-        self._placeholder = placeholder
-        self._delegate = computed_delegate
-        # The implementation works by delegating all public functions
-        # to the delegate, apart from .write(v), which writes to 
-        # the placeholder instead.
-        # computed_delegate is then automatically updated.
+        if write_delegate not in read_delegate._dependants:
+            raise Exception("Cannot construct a delegate, as the observables are not bound")
+        self._write_delegate = write_delegate
+        self._read_delegate = read_delegate
 
     def write(self, item: AsyncObservable[T]) -> AsyncObservable[T]:
-        self._placeholder.write(item)
+        self._write_delegate.write(item)
         return self
 
     def peek(self) -> Optional[T]:
-        """Return the current value held by the observable, which is of type T,
-        or None, if nothing has been written to the observable yet.
-        """
-        return self._delegate.peek()
+        return self._read_delegate.peek()
 
     def subscribe(self, subscriber: Subscriber[T]) -> AsyncObservable[T]:
-        self._delegate.subscribe(subscriber)
+        self._read_delegate.subscribe(subscriber)
         return self
 
     def bind_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
-        self._delegate.bind_to(other)
+        self._read_delegate.bind_to(other)
         return other
 
     def join_to(self, other: AsyncObservable[T]) -> AsyncObservable[T]:
-        joined = self._delegate.join_to(other)
+        joined = self._read_delegate.join_to(other)
         return joined
 
     def filter(self, expr: Callable[[T], bool]) -> AsyncObservable[T]:
-        filtered = self._delegate.filter(expr)
+        filtered = self._read_delegate.filter(expr)
         return filtered
 
 class ComputedMapped(AsyncObservable):

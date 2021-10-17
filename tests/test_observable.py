@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from flo import AsyncObservable, ComputedLambda, Subscriber, AsyncManager
+from flo import AsyncObservable, ReadWriteDelegator, Subscriber, AsyncManager
 
 class AsyncObservableTests(unittest.TestCase):
     def setUp(self):
@@ -129,31 +129,31 @@ class AsyncObservableTests(unittest.TestCase):
         observable1 = AsyncObservable(False)
         assert observable1.peek() == False
 
-class ComputedLambdaTests(unittest.TestCase):
-    def test_create_lambda(self):
+class ReadWriteDelegateTests(unittest.TestCase):
+    def test_create_delegate(self):
         observable1 = AsyncObservable[int]()
         observable2 = AsyncObservable[int](10)
 
         observable3 = AsyncObservable.computed(
             lambda a,b: a+b, [observable1, observable2])
         
-        cl = ComputedLambda(observable1, observable3)
+        delegator = ReadWriteDelegator(observable1, observable3)
         AsyncManager.get_instance().run()
-        assert cl.peek() == None
+        assert delegator.peek() == None
 
-    def test_lambda_write(self):
+    def test_delegate_write(self):
         observable1 = AsyncObservable[int]()
         observable2 = AsyncObservable[int](10)
 
         observable3 = AsyncObservable.computed(
             lambda a,b: a+b, [observable1, observable2])
         
-        cl = ComputedLambda(observable1, observable3)
-        cl.write(5)
+        delegator = ReadWriteDelegator(observable1, observable3)
+        delegator.write(5)
         AsyncManager.get_instance().run()
-        assert cl.peek() == 15
+        assert delegator.peek() == 15
 
-    def test_lambda_bind_to(self):
+    def test_delegate_bind_to(self):
         observable1 = AsyncObservable[int]()
         observable2 = AsyncObservable[int](10)
         observable4 = AsyncObservable[int]()
@@ -161,13 +161,13 @@ class ComputedLambdaTests(unittest.TestCase):
         observable3 = AsyncObservable.computed(
             lambda a,b: a+b, [observable1, observable2])
         
-        cl = ComputedLambda(observable1, observable3)
-        cl.bind_to(observable4)
-        cl.write(5)
+        delegator = ReadWriteDelegator(observable1, observable3)
+        delegator.bind_to(observable4)
+        delegator.write(5)
         AsyncManager.get_instance().run()
         assert observable4.peek() == 15
 
-    def test_lambda_join_to(self):
+    def test_delegate_join_to(self):
         observable1 = AsyncObservable[int]()
         observable2 = AsyncObservable[int](10)
         observable4 = AsyncObservable[int]()
@@ -175,13 +175,13 @@ class ComputedLambdaTests(unittest.TestCase):
         observable3 = AsyncObservable.computed(
             lambda a,b: a+b, [observable1, observable2])
         
-        cl = ComputedLambda(observable1, observable3)
-        observable5 = cl.join_to(observable4)
-        cl.write(5)
+        delegator = ReadWriteDelegator(observable1, observable3)
+        observable5 = delegator.join_to(observable4)
+        delegator.write(5)
         AsyncManager.get_instance().run()
         assert observable5.peek() == 15
 
-    def test_lambda_filter(self):
+    def test_delegate_filter(self):
         observable1 = AsyncObservable[int]()
         observable2 = AsyncObservable[int](10)
         observable4 = AsyncObservable[int]()
@@ -189,14 +189,22 @@ class ComputedLambdaTests(unittest.TestCase):
         observable3 = AsyncObservable.computed(
             lambda a,b: a+b, [observable1, observable2])
         
-        cl = ComputedLambda(observable1, observable3)
-        observable5 = cl.filter(lambda v : v > 20)
-        cl.write(5)
+        delegator = ReadWriteDelegator(observable1, observable3)
+        observable5 = delegator.filter(lambda v : v > 20)
+        delegator.write(5)
         AsyncManager.get_instance().run()
         assert observable5.peek() == None
-        cl.write(15)
+        delegator.write(15)
         AsyncManager.get_instance().run()
         assert observable5.peek() == 25
+
+    def test_delegate_args_must_be_bound(self):
+        observable1 = AsyncObservable[int]()
+        observable2 = AsyncObservable[int]()
+        with self.assertRaises(Exception) as e:
+            delegator = ReadWriteDelegator(observable1, observable2)
+        assert e.exception.args ==\
+            ("Cannot construct a delegate, as the observables are not bound",)
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,7 +16,7 @@ from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import setup_default_runtime, Component, Filter, Module
-from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ComputedLambda
+from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ReadWriteDelegator
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -380,15 +380,14 @@ class FloListenerImpl(FloListener):
         del self.scope.locals["?"]
         self._is_lambda = False
 
-        # declare an observable that listens for 
-        _lambda = ComputedLambda(placeholder, self.register[0])
+        _lambda = ReadWriteDelegator(placeholder, self.register[0])
 
         if ctx.children[0].getText() == "public":
             _id = ctx.children[1].getText()
-            self.scope.declare_public(_id, placeholder)
+            self.scope.declare_public(_id, _lambda)
         else:
             _id = ctx.children[0].getText()
-            self.scope.declare_local(_id, placeholder)
+            self.scope.declare_local(_id, _lambda)
         self.register = []
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
