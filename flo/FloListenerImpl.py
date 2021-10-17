@@ -15,7 +15,8 @@ from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
-from . runtime import setup_default_runtime, Component, Filter, Module
+from . module import Component, Filter, Module
+from . runtime import setup_default_runtime
 from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ReadWriteDelegator
 
 class EOFException(Exception):
