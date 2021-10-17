@@ -2,10 +2,11 @@
 """
 from __future__ import annotations
 
+import asyncio
 import sys
-from typing import Any, Union
+from typing import Any, Union, Tuple
 
-from . import AsyncObservable, Subscriber
+from . import AsyncObservable, Subscriber, AsyncManager, unwrap
 
 class Module:
     def __init__(self, name, **opts):
@@ -126,6 +127,65 @@ def compose_file_module(parent_module):
     add_file_writer(file)
     parent_module.declare_public("file", file)
 
+def add_socket_server(parent_module):
+    server = Component("server")
+    bind = AsyncObservable[Tuple[str, int]]()
+    server.declare_public("bind", bind)
+    isRunning = AsyncObservable[bool](False)
+    server.declare_public("isRunning", isRunning)
+    messages = AsyncObservable[Any]()
+    server.declare_public("messages", messages)
+    bufferSize = AsyncObservable[int](256)
+    server.declare_public("bufferSize", messages)
+
+    async def handle_client(reader, writer):
+        while unwrap(isRunning.peek()):
+            bs = unwrap(bufferSize.peek())
+            print("Client connected, recieving ",bs ,"bytes")
+            request = (await reader.read(bs)).decode('utf8')
+            #response = str(eval(request)) + '\n'
+            
+            def _on_response_ready(_response):
+                print("Got response to send ", _response)
+                writer.write(unwrap(_response).encode('utf8'))
+                #await writer.drain()
+                AsyncManager.get_instance().enqueue_async(writer.drain())
+                print("Sent response!")
+            
+            handler = AsyncObservable()
+            handler.subscribe(
+                Subscriber(
+                    on_next = lambda response : _on_response_ready(response)
+                )
+            )
+            messages.write((handler, request))
+            
+            #response = "OK\n"
+            #writer.write(response.encode('utf8'))
+            #await writer.drain()
+        writer.close()
+
+    async def run_server():
+        addr, port = unwrap(bind.peek())
+        print("binding to ", addr, port)
+        server = await asyncio.start_server(handle_client, unwrap(addr), unwrap(port))
+        async with server:
+            await server.serve_forever()
+
+    isRunning.subscribe(
+        Subscriber(
+            on_next = lambda data:\
+            AsyncManager.get_instance().enqueue_async(run_server()) if data else None
+        )
+    )
+
+    parent_module.declare_public("server", server)
+
+def compose_socket_module(parent_module):
+    socket = Module("socket")
+    add_socket_server(socket)
+    parent_module.declare_public("socket", socket)
+
 def setup_default_runtime():
     active_runtime = Runtime()
 
@@ -154,5 +214,6 @@ def setup_default_runtime():
     })
 
     compose_file_module(__main_module__)
+    compose_socket_module(__main_module__)
 
     return __main_module__
