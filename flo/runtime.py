@@ -141,17 +141,16 @@ def add_socket_server(parent_module):
     async def handle_client(reader, writer):
         while unwrap(isRunning.peek()):
             bs = unwrap(bufferSize.peek())
-            print("Client connected, recieving ",bs ,"bytes")
+            # client connected, read request
             request = (await reader.read(bs)).decode('utf8')
-            #response = str(eval(request)) + '\n'
-            
-            def _on_response_ready(_response):
-                print("Got response to send ", _response)
+            if not request:
+                # client disconnected
+                return
+
+            async def _on_response_ready(_response):
                 writer.write(unwrap(_response).encode('utf8'))
-                #await writer.drain()
-                AsyncManager.get_instance().enqueue_async(writer.drain())
-                print("Sent response!")
-            
+                await writer.drain()
+
             handler = AsyncObservable()
             handler.subscribe(
                 Subscriber(
@@ -159,18 +158,27 @@ def add_socket_server(parent_module):
                 )
             )
             messages.write((handler, request))
-            
-            #response = "OK\n"
-            #writer.write(response.encode('utf8'))
-            #await writer.drain()
+
         writer.close()
 
     async def run_server():
+        nonlocal server
         addr, port = unwrap(bind.peek())
-        print("binding to ", addr, port)
+
         server = await asyncio.start_server(handle_client, unwrap(addr), unwrap(port))
         async with server:
-            await server.serve_forever()
+            loop = server.get_loop()
+
+            # need to poll in order for interupt signals to be detected
+            # TODO probably a better way to do this.
+            try:
+                while loop.is_running:
+                    await asyncio.sleep(1)
+            except KeyboardInterrupt:
+                pass
+            finally:
+                loop.close()
+                server.close()
 
     isRunning.subscribe(
         Subscriber(
