@@ -135,6 +135,7 @@ class FloListenerImpl(FloListener):
         self._is_get_attrib = False
         self._is_sync = False
         self.is_repl = is_repl
+        self._is_lambda = False
 
     def _enter_nested_scope(self,
         scope: Union[Module, Component, Filter],
@@ -368,22 +369,27 @@ class FloListenerImpl(FloListener):
     def enterComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
         # this is a placeholder for the stream input, that is
         # only present for the duration of the lambda declaration
-        self.scope.declare_local("?", AsyncObservable())
+        placeholder = AsyncObservable[Any]()
+        self.scope.declare_local("?", placeholder)
+        
+        self._is_lambda = True
 
     # Exit a parse tree produced by FloParser#computedLambdaDeclaration.
     def exitComputedLambdaDeclaration(self, ctx:FloParser.ComputedLambdaDeclarationContext):
         placeholder = self.scope.locals["?"][1]
         del self.scope.locals["?"]
+        self._is_lambda = False
+
         # declare an observable that listens for 
         _lambda = ComputedLambda(placeholder, self.register[0])
 
         if ctx.children[0].getText() == "public":
             _id = ctx.children[1].getText()
-            self.scope.declare_public(_id, _lambda)
+            self.scope.declare_public(_id, placeholder)
         else:
             _id = ctx.children[0].getText()
-            self.scope.declare_local(_id, _lambda)
-        self.register = self.register[1:]
+            self.scope.declare_local(_id, placeholder)
+        self.register = []
 
     # # Enter a parse tree produced by FloParser#compound_expression_filter.
     def enterCompound_expression_filter(self, ctx:FloParser.Compound_expression_filterContext):
@@ -514,14 +520,28 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression_putvalue.
     def exitCompound_expression_putvalue(self,
         ctx:FloParser.Compound_expression_putvalueContext):
-
         if len(ctx.children) == 3:
-            self.register[0].write(self.register[1])
-            # if this is within a sync {...} block, the
-            # asyncio event loop is run to completion on each put value
-            if self._is_sync:
-                AsyncManager.get_instance().run()
-            self.register = []
+            if self._is_lambda:
+                left = self.register[0]
+                right = self.register[1]
+                placeholder = self.scope.locals["?"][1]
+                def _on_write():
+                    nonlocal left
+                    nonlocal right
+                    left.peek().write(unwrap(right))
+
+                computed = AsyncObservable.computed(
+                    lambda x: _on_write(),
+                    [placeholder]
+                )
+                self.register = [computed]
+            else:
+                self.register[0].write(self.register[1])
+                # if this is within a sync {...} block, the
+                # asyncio event loop is run to completion on each put value
+                if self._is_sync:
+                    AsyncManager.get_instance().run()
+                self.register = [self.register[0]]
 
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):

@@ -267,6 +267,30 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["13", "15"]
 
+    def test_computed_lambda_style_syntax(self):
+        src = """
+            module main {
+                dec { x :: (?[0]) <- (?[1]) }
+                sync {
+                    x <- (stdout, 1)
+                    x <- (stdout, 2)
+                }
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["1", "2"]
+
+    def test_computed_lambda_style_syntax2(self):
+        src = """
+            module main {
+                dec  x :: ? <- "Hello world"
+                x <- stdout
+                stdout <- x
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["Hello world"]
+
     def test_typings_are_optional(self):
         src = """
             module main {
