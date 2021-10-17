@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import socket
 import sys
 from typing import Any, Union, Tuple
 
@@ -189,10 +190,47 @@ def add_socket_server(parent_module):
 
     parent_module.declare_public("server", server)
 
+def add_socket_client(parent_module):
+    client = Component("client")
+    bind = AsyncObservable[Tuple[str, int]]()
+    client.declare_public("bind", bind)
+    isOpen = AsyncObservable[bool](False)
+    client.declare_public("isOpen", isOpen)
+    requests = AsyncObservable[Any]()
+    client.declare_public("requests", requests)
+    bufferSize = AsyncObservable[int](256)
+    client.declare_public("bufferSize", bufferSize)
+
+    async def _make_request(_client, data):
+        payload, callback = data.peek()
+        _client.sendall(unwrap(payload).encode())
+        response = _client.recv(bufferSize.peek())
+        callback.write(response)
+        return response
+
+    async def _connect():
+        addr, port = unwrap(bind.peek())
+        _client = socket.create_connection((unwrap(addr), unwrap(port)))
+        requests.subscribe(
+            Subscriber(
+                on_next = lambda data: _make_request(_client, data)
+            )
+        )
+
+    isOpen.subscribe(
+        Subscriber(
+            on_next = lambda data:\
+            AsyncManager.get_instance().enqueue_async(_connect()) if data else None
+        )
+    )
+    parent_module.declare_public("client", client)
+
 def compose_socket_module(parent_module):
     socket = Module("socket")
     add_socket_server(socket)
+    add_socket_client(socket)
     parent_module.declare_public("socket", socket)
+
 
 def setup_default_runtime():
     active_runtime = Runtime()

@@ -1,0 +1,9 @@
+module main {
+    dec s : socket.server
+    dec handler :: ?[0] <- ?[1]
+    sync {
+        s.bind <- ("localhost", 8888)
+        s.messages -> handler
+        s.isRunning <- true
+    }
+}

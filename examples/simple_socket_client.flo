@@ -1,0 +1,10 @@
+module main {
+    dec c : socket.client
+    dec callback = ""
+    sync {
+        c.bind <- ("localhost", 8888)
+        c.requests <- ("Hello from client", callback)
+        callback -> stdout
+        c.isOpen <- true
+    }
+}
