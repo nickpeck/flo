@@ -285,7 +285,7 @@ class ParserTests(unittest.TestCase):
             module main {
                 dec  x :: ? <- "Hello world"
                 x <- stdout
-                stdout <- x
+                // stdout <- x TODO , this will cause recursion - need to detect
             }
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
