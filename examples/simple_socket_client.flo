@@ -1,10 +1,11 @@
+// make a request to local socket and print out the response
+// try running alongside simple_socket_server.flo
 module main {
     dec c : socket.client
     dec callback = ""
     sync {
-        c.bind <- ("localhost", 8888)
+        c.connectTo <- ("localhost", 8888)
         c.requests <- ("Hello from client", callback)
         callback -> stdout
-        c.isOpen <- true
     }
 }

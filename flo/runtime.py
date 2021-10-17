@@ -74,6 +74,10 @@ class Runtime(Subscriber[int]):
         pass
 
 def add_file_reader(parent_module):
+    """File reader
+    - path: str, accepts the path to the file to read from
+    - readlines: string: emits the contents of the file, line by line
+    """
     reader = Component("reader")
     path = AsyncObservable[str]()
     reader.declare_public("path", path)
@@ -91,6 +95,10 @@ def add_file_reader(parent_module):
     parent_module.declare_public("reader", reader)
 
 def add_file_writer(parent_module):
+    """File writer
+    - path: str, accepts the path to the file to write to
+    - append: any, binary-encodable data to write to the file
+    """
     writer = Component("writer")
     path = AsyncObservable[str]()
     writer.declare_public("path", path)
@@ -129,6 +137,13 @@ def compose_file_module(parent_module):
     parent_module.declare_public("file", file)
 
 def add_socket_server(parent_module):
+    """A simple asynchronus socket server
+    - bind: tuple[str, int], accepts the hostname and port to bind to
+    - bufferSize: int, accepts the request buffer size (default 256 bytes)
+    - messages: tuple[str, Any], emits eith a tuple of (request, callback) for 
+        each request received
+    - isRunning: bool: accept the running state of the server (default false)
+    """
     server = Component("server")
     bind = AsyncObservable[Tuple[str, int]]()
     server.declare_public("bind", bind)
@@ -158,7 +173,7 @@ def add_socket_server(parent_module):
                     on_next = lambda response : _on_response_ready(response)
                 )
             )
-            messages.write((handler, request))
+            messages.write((request, handler))
 
         writer.close()
 
@@ -173,7 +188,7 @@ def add_socket_server(parent_module):
             # need to poll in order for interupt signals to be detected
             # TODO probably a better way to do this.
             try:
-                while loop.is_running:
+                while loop.is_running: 
                     await asyncio.sleep(1)
             except KeyboardInterrupt:
                 pass
@@ -191,36 +206,42 @@ def add_socket_server(parent_module):
     parent_module.declare_public("server", server)
 
 def add_socket_client(parent_module):
+    """A simple asynchronus socket client
+    - connectTo: tuple[str, int], accepts the hostname and port to connect to
+    - bufferSize: int, accepts the request buffer size (default 256 bytes)
+    - requests: any, accepts eith a tuple of (payload, callback), or just 
+        the payload
+    """
     client = Component("client")
-    bind = AsyncObservable[Tuple[str, int]]()
-    client.declare_public("bind", bind)
-    isOpen = AsyncObservable[bool](False)
-    client.declare_public("isOpen", isOpen)
+    connect_to = AsyncObservable[Tuple[str, int]]()
+    client.declare_public("connectTo", connect_to)
     requests = AsyncObservable[Any]()
     client.declare_public("requests", requests)
     bufferSize = AsyncObservable[int](256)
     client.declare_public("bufferSize", bufferSize)
 
-    async def _make_request(_client, data):
-        payload, callback = data.peek()
-        _client.sendall(unwrap(payload).encode())
-        response = _client.recv(bufferSize.peek())
-        callback.write(response)
-        return response
+    async def _make_request(reader, writer, data):
+        try:
+            payload, callback = data.peek()
+        except TypeError:
+            payload = data.peek()
+            callback = None
+        writer.write(unwrap(payload).encode())
+        await writer.drain()
+        response = await reader.read(bufferSize.peek())
+        if callable is not None:
+            callback.write(response)
 
-    async def _connect():
-        addr, port = unwrap(bind.peek())
-        _client = socket.create_connection((unwrap(addr), unwrap(port)))
-        requests.subscribe(
-            Subscriber(
-                on_next = lambda data: _make_request(_client, data)
-            )
-        )
+    async def _connect(data):
+        addr, port = unwrap(connect_to.peek())
+        reader, writer = await asyncio.open_connection(
+            unwrap(addr), unwrap(port))
+        await _make_request(reader, writer, data)
 
-    isOpen.subscribe(
+    requests.subscribe(
         Subscriber(
-            on_next = lambda data:\
-            AsyncManager.get_instance().enqueue_async(_connect()) if data else None
+            on_next = lambda data: \
+                AsyncManager.get_instance().enqueue_async(_connect(data))
         )
     )
     parent_module.declare_public("client", client)

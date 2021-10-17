@@ -1,6 +1,9 @@
+// an echo server implementation
+// try running alongside simple_socket_client.flo
 module main {
     dec s : socket.server
-    dec handler :: ?[0] <- ?[1]
+    // the handler writes the request payload to the callback:
+    dec handler :: ?[1] <- ?[0]
     sync {
         s.bind <- ("localhost", 8888)
         s.messages -> handler
