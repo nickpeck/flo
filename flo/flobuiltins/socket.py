@@ -27,7 +27,7 @@ class Socket(ModuleBuilder):
         server = Component("server")
         bind = AsyncObservable[Tuple[str, int]]()
         server.declare_public("bind", bind)
-        isRunning = AsyncObservable[bool](False)
+        isRunning = AsyncObservable[bool]()
         server.declare_public("isRunning", isRunning)
         messages = AsyncObservable[Any]()
         server.declare_public("messages", messages)

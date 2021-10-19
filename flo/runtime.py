@@ -51,15 +51,10 @@ class Runtime(Subscriber[int]):
             Subscriber[str](
                 on_next = lambda s : sys.stderr.write(str(s) + "\n")))
 
-        #_builtin_stdin = AsyncObservable[Any]()
-        # for line in sys.stdin:
-            # _builtin_stdin.write(line)
-
         _builtin_runtime = AsyncObservable[int]()
         _builtin_runtime.subscribe(self)
 
         __main_module__ = Module("main", **{
-            # "stdin": _builtin_stdin,
             "stdout" : _builtin_stdout,
             "stderr" : _builtin_stderr,
             "rt" : _builtin_runtime

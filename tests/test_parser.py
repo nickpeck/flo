@@ -48,10 +48,8 @@ class ParserTests(unittest.TestCase):
             "rt" : _builtin_runtime
         })
 
-        #file.File(__main_module__).compose()
+        file.File(__main_module__).compose()
         #socket.Socket(__main_module__).compose()
-        # TODO refactor this so we can mock file interactions using stringIO
-        #compose_file_module(__main_module__)
 
         return __main_module__
 
