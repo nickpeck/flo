@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from flo import AsyncObservable, ReadWriteDelegator, Subscriber, AsyncManager
+from flo.observable import AsyncObservable, ReadWriteDelegator, Subscriber, AsyncManager
 
 class AsyncObservableTests(unittest.TestCase):
     def setUp(self):

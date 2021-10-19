@@ -18,9 +18,10 @@ class Module:
         self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
 
-    def declare_public(self, name: str, pipe: AsyncObservable):
+    def declare_public(self, name: str, 
+        attr: Union[AsyncObservable, Component, Module]):
         self._check_is_not_defined(name)
-        self.locals[name] = ("public", pipe)
+        self.locals[name] = ("public", attr)
 
     def get_member(self, name):
         return self.locals[name][1]
@@ -53,3 +54,9 @@ class Filter(Module):
     def __init__(self, name, input_observable: AsyncObservable):
         super().__init__("Anonymous Filter on '{}'".format(name))
         self.declare_public(name, input_observable)
+
+class ModuleBuilder:
+    def __init__(self, parent_module: Module):
+        self.parent_module = parent_module
+    def compose(self):
+        pass

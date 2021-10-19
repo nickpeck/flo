@@ -15,8 +15,8 @@ from antlr4.error.ErrorListener import ErrorListener # type: ignore
 from . FloLexer import FloLexer
 from . FloParser import FloParser
 from . FloListener import FloListener
+from . runtime import Runtime
 from . module import Component, Filter, Module
-from . runtime import setup_default_runtime
 from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ReadWriteDelegator
 
 class EOFException(Exception):
@@ -130,7 +130,7 @@ class FloListenerImpl(FloListener):
         super().__init__()
         self.register = []
         if main_module is None:
-            self.scope = setup_default_runtime()
+            self.scope = Runtime().setup_default_runtime()
         else:
             self.scope = main_module
         self._is_get_attrib = False

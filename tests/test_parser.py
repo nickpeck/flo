@@ -3,8 +3,10 @@ import os
 from typing import Any
 import unittest
 
-from flo import (AsyncObservable, Subscriber, 
-    Module, AsyncManager, Component, compose_file_module)
+from flo.observable import (AsyncObservable, Subscriber, 
+     AsyncManager)
+from flo.module import Module
+from flo.flobuiltins import file, socket
 from flo.FloListenerImpl import FloListenerImpl
 
 class ParserTests(unittest.TestCase):
@@ -46,8 +48,10 @@ class ParserTests(unittest.TestCase):
             "rt" : _builtin_runtime
         })
 
+        #file.File(__main_module__).compose()
+        #socket.Socket(__main_module__).compose()
         # TODO refactor this so we can mock file interactions using stringIO
-        compose_file_module(__main_module__)
+        #compose_file_module(__main_module__)
 
         return __main_module__
 
