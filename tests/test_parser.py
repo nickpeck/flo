@@ -672,5 +672,17 @@ class ParserTests(unittest.TestCase):
         finally:
             os.remove("test.log")
 
+    def test_chained_puts(self):
+        src = """
+            module main {
+                dec x = 3
+                dec y = 4
+                stdout <- x <- y <- 8
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["8"]
+
+
 if __name__ == "__main__":
     unittest.main()

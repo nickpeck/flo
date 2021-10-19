@@ -522,8 +522,8 @@ class FloListenerImpl(FloListener):
         ctx:FloParser.Compound_expression_putvalueContext):
         if len(ctx.children) == 3:
             if self._is_lambda:
-                left = self.register[0]
-                right = self.register[1]
+                left = self.register[-2]
+                right = self.register[-1]
                 placeholder = self.scope.locals["?"][1]
                 def _on_write():
                     nonlocal left
@@ -534,14 +534,14 @@ class FloListenerImpl(FloListener):
                     lambda x: _on_write(),
                     [placeholder]
                 )
-                self.register = [computed]
+                self.register = self.register[:-2] + [computed]
             else:
-                self.register[0].write(self.register[1])
+                self.register[-2].write(self.register[-1])
                 # if this is within a sync {...} block, the
                 # asyncio event loop is run to completion on each put value
                 if self._is_sync:
                     AsyncManager.get_instance().run()
-                self.register = [self.register[0]]
+                self.register = self.register[:-1]
 
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):

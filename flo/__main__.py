@@ -2,8 +2,13 @@ import sys
 
 from . FloListenerImpl import FloListenerImpl
 
+source_file = None
 try:
-    file = sys.argv[1]
-    FloListenerImpl.loadModule(file)
+    source_file = sys.argv[1]
 except IndexError:
+    pass
+
+if source_file is not None:
+    FloListenerImpl.loadModule(source_file)
+else:
     FloListenerImpl.repl()
