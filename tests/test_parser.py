@@ -672,7 +672,7 @@ class ParserTests(unittest.TestCase):
         finally:
             os.remove("test.log")
 
-    def test_chained_puts(self):
+    def test_put_stmts_can_be_chained(self):
         src = """
             module main {
                 dec x = 3
@@ -682,6 +682,22 @@ class ParserTests(unittest.TestCase):
         """
         main_module = FloListenerImpl.loadString(src, self.runtime)
         assert self.stdout == ["8"]
+
+    def test_bind_stmts_can_be_chained(self):
+        src = """
+            module main {
+                dec x
+                dec y
+                dec z
+                sync {
+                    x -> y -> z
+                    x <- "the message"
+                    stdout <- z
+                }
+            }
+        """
+        main_module = FloListenerImpl.loadString(src, self.runtime)
+        assert self.stdout == ["the message"]
 
 
 if __name__ == "__main__":

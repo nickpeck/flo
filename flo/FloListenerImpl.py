@@ -565,9 +565,15 @@ class FloListenerImpl(FloListener):
 
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
-        if len(ctx.children) == 3:
-            self.register[0].bind_to(self.register[1])
-            self.register = []
+        if len(ctx.children) >= 3:
+            # could be some chained expressions, x -> y -> z etc
+            # so work from left to right:
+            values = list(filter(lambda v: v != "->", [c.getText() for c in ctx.children]))
+            while len(values) >= 2:
+                left = self.register[0]
+                right = self.register[1]
+                self.register = [left.bind_to(right)] + self.register[2:]
+                values.pop(0)
 
     # Enter a parse tree produced by FloParser#statement.
     def enterStatement(self, ctx:FloParser.StatementContext):
