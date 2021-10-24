@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import socket
-import sys
-from typing import Any, Union, Tuple
+from typing import Any, Tuple
 
 from .. observable import AsyncObservable, AsyncManager, Subscriber, unwrap
 from .. module import Module, Component, ModuleBuilder

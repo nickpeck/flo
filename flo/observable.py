@@ -228,8 +228,8 @@ class ReadWriteDelegator(AsyncObservable):
     The outward effect, (to the consumer) is of a single observable
     which emits a modified response to each value written to it.
     """
-    def __init__(self, 
-        write_delegate: AsyncObservable, 
+    def __init__(self,
+        write_delegate: AsyncObservable,
         read_delegate: AsyncObservable[T]):
 
         super().__init__(None, [])

@@ -18,7 +18,7 @@ class Module:
         self._check_is_not_defined(name)
         self.locals[name] = ("local", attr)
 
-    def declare_public(self, name: str, 
+    def declare_public(self, name: str,
         attr: Union[AsyncObservable, Component, Module]):
         self._check_is_not_defined(name)
         self.locals[name] = ("public", attr)

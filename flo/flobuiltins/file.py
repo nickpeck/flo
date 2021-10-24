@@ -1,4 +1,4 @@
-from .. observable import AsyncObservable, AsyncManager, Subscriber
+from .. observable import AsyncObservable, Subscriber
 from .. module import Module, Component, ModuleBuilder
 
 class File(ModuleBuilder):

@@ -214,7 +214,7 @@ class FloListenerImpl(FloListener):
         self._is_get_attrib = True
         left = ctx.children[0].getText()
         rights = list(filter(
-            lambda c: c != ".", 
+            lambda c: c != ".",
             [c.getText() for c in ctx.children[2:]]))
         right = rights[0]
         returnval = self.scope.get_member(left).get_member(right)
@@ -303,7 +303,7 @@ class FloListenerImpl(FloListener):
             type_parts = children[i+1:]
             try:
                 type_parts.remove(".")
-            except ValueError: 
+            except ValueError:
                 pass
             for t in type_parts:
                 # type is a dot-lookup ie dec f : file.reader
@@ -372,7 +372,7 @@ class FloListenerImpl(FloListener):
         # only present for the duration of the lambda declaration
         placeholder = AsyncObservable[Any]()
         self.scope.declare_local("?", placeholder)
-        
+
         self._is_lambda = True
 
     # Exit a parse tree produced by FloParser#computedLambdaDeclaration.
@@ -566,14 +566,35 @@ class FloListenerImpl(FloListener):
     # Exit a parse tree produced by FloParser#compound_expression.
     def exitCompound_expression(self, ctx:FloParser.Compound_expressionContext):
         if len(ctx.children) >= 3:
+            # perform bind, eg x -> y
             # could be some chained expressions, x -> y -> z etc
-            # so work from left to right:
+            # so work from left to right, condensing them:
             values = list(filter(lambda v: v != "->", [c.getText() for c in ctx.children]))
-            while len(values) >= 2:
+            if self._is_lambda:
+                reg = self.register[:]
+                placeholder = self.scope.locals["?"][1]
+                def _do_bind():
+                    nonlocal reg
+                    nonlocal values
+                    _reg = reg[:]
+                    for i in range(len(values) - 1):
+                        left = _reg[0]
+                        right = _reg[1]
+                        left.peek().bind_to(right.peek())
+                        _reg = [left] + _reg[2:]
+
+                computed = AsyncObservable.computed(
+                    lambda x: _do_bind(),
+                    [placeholder]
+                )
+                self.register = self.register[:len(values)+1] + [computed]
+                return
+
+            for i in range(len(values) - 1):
                 left = self.register[0]
                 right = self.register[1]
-                self.register = [left.bind_to(right)] + self.register[2:]
-                values.pop(0)
+                left.bind_to(right)
+                self.register = [left] + self.register[2:]
 
     # Enter a parse tree produced by FloParser#statement.
     def enterStatement(self, ctx:FloParser.StatementContext):
