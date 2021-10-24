@@ -17,7 +17,7 @@ from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import Runtime
 from . module import Component, Filter, Module
-from . observable import AsyncObservable, Subscriber, ComputedMapped, AsyncManager, unwrap, ReadWriteDelegator
+from . observable import AsyncObservable, Subscriber, ObservableWrapper, AsyncManager, unwrap, ReadWriteDelegator
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -272,7 +272,7 @@ class FloListenerImpl(FloListener):
             c = Component(libname)
             for name, obj in inspect.getmembers(imported):
                 if inspect.ismethod(obj) or inspect.isfunction(obj) or inspect.isbuiltin(obj):
-                    wrapper_observable = ComputedMapped(None, None, obj) # type: ignore
+                    wrapper_observable = ObservableWrapper(obj) # type: ignore
                     c.declare_public(name, wrapper_observable)
             self.scope.declare_local(libname, c)
 

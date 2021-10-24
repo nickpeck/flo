@@ -261,14 +261,13 @@ class ReadWriteDelegator(AsyncObservable):
         filtered = self._read_delegate.filter(expr)
         return filtered
 
-class ComputedMapped(AsyncObservable):
+class ObservableWrapper(AsyncObservable):
     """Used as a wrapper to elevate library functions
     into observables
     """
     def __init__(self,
-        head=None, dependants=None,
         func: Callable[[T], Any] = lambda x : x):
-        super().__init__(head, dependants)
+        super().__init__(None, [])
         self.func = func
 
     def write(self, item: AsyncObservable[T]) -> AsyncObservable[T]:
