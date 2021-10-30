@@ -23,7 +23,6 @@ class EOFException(Exception):
     """Indicates that the input could not be passed owing to
     an unexpeced EOF.
     """
-    pass
 
 class REPLErrorListener(ErrorListener):
     """Custom error listener used in the REPL
@@ -130,7 +129,8 @@ class FloListenerImpl(FloListener):
         super().__init__()
         self.register = []
         if main_module is None:
-            self.scope = Runtime().setup_default_runtime()
+            rt = Runtime()
+            self.scope = rt.main_module
         else:
             self.scope = main_module
         self._is_get_attrib = False
@@ -238,7 +238,7 @@ class FloListenerImpl(FloListener):
             rights[i] = int(rights[i])
         left = self.register.pop(-1)
 
-        def _index(l):
+        def _index(*args):
             nonlocal rights
             value = unwrap(left)[rights[0]]
             for right in rights[1:]:

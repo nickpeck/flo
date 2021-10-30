@@ -2,15 +2,13 @@
 """
 from __future__ import annotations
 
-import asyncio
 import importlib
 import inspect
 import pkgutil
-import socket
 import sys
-from typing import Any, Union, Tuple
+from typing import Any
 
-from . observable import AsyncObservable, Subscriber, AsyncManager, unwrap
+from . observable import AsyncObservable, Subscriber
 from . module import Module, ModuleBuilder
 from . import flobuiltins
 
@@ -32,7 +30,6 @@ class Runtime(Subscriber[int]):
         if value == self.__class__.SIG_TERMINATE:
             self._exit()
         # TODO react to value, terminate, restart etc
-        pass
 
     def load_builtins(self):
         sub_modules = [mod_info[1] for mod_info in pkgutil.iter_modules(flobuiltins.__path__)] # type: ignore

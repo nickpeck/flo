@@ -18,7 +18,7 @@ class Socket(ModuleBuilder):
         """A simple asynchronus socket server
         - bind: tuple[str, int], accepts the hostname and port to bind to
         - bufferSize: int, accepts the request buffer size (default 256 bytes)
-        - messages: tuple[str, Any], emits eith a tuple of (request, callback) for 
+        - messages: tuple[str, Any], emits eith a tuple of (request, callback) for
             each request received
         - isRunning: bool: accept the running state of the server (default false)
         """
@@ -66,7 +66,7 @@ class Socket(ModuleBuilder):
                 # need to poll in order for interupt signals to be detected
                 # TODO probably a better way to do this.
                 try:
-                    while loop.is_running: 
+                    while loop.is_running:
                         await asyncio.sleep(1)
                 except KeyboardInterrupt:
                     pass
@@ -87,7 +87,7 @@ class Socket(ModuleBuilder):
         """A simple asynchronus socket client
         - connectTo: tuple[str, int], accepts the hostname and port to connect to
         - bufferSize: int, accepts the request buffer size (default 256 bytes)
-        - requests: any, accepts eith a tuple of (payload, callback), or just 
+        - requests: any, accepts eith a tuple of (payload, callback), or just
             the payload
         """
         client = Component("client")
