@@ -7,14 +7,11 @@ class RuntimeTests(unittest.TestCase):
     def test_runtime_creation(self):
         r = Runtime()
 
-    def test_setup_active_runtime(self):
+    def test_setup_main_module(self):
         async def _test():
             r = Runtime()
-            ar = r.setup_default_runtime()
-            return ar
+            return r.main_module
 
-        #loop = asyncio.get_event_loop()
-        #result = loop.run_until_complete(_test())
         result = asyncio.run(_test())
         assert str(result) == "<Module 'main'>"
 

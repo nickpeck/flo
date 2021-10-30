@@ -4,54 +4,47 @@ from typing import Any
 import unittest
 
 from flo.observable import (AsyncObservable, Subscriber, 
-     AsyncManager)
+     AsyncManager, unwrap)
 from flo.module import Module
 from flo.flobuiltins import file, socket
 from flo.FloListenerImpl import FloListenerImpl
+from flo.runtime import Runtime
 
 class ParserTests(unittest.TestCase):
+    class DummyRuntime(Runtime):
+
+        def compose_main_module(self):
+            self.stdout = []
+            self.stderr = []
+            active_runtime = AsyncObservable[str]
+
+            _builtin_stdout = AsyncObservable[Any]()
+            _builtin_stdout.subscribe(
+                Subscriber[str](
+                    on_next = lambda s : self.stdout.append(str(unwrap(s)))))
+
+            _builtin_stderr = AsyncObservable[Any]()
+            _builtin_stderr.subscribe(
+                Subscriber[str](
+                    on_next = lambda s : self.stderr.append(str(unwrap(s)))))
+
+            _builtin_runtime = AsyncObservable[str]()
+            _builtin_runtime.subscribe(active_runtime)
+
+            self.main_module = Module("main", **{
+                "stdout" : _builtin_stdout,
+                "stderr" : _builtin_stderr,
+                "rt" : _builtin_runtime
+            })
+
+            file.File(self.main_module).compose()
 
     def setUp(self):
-        self.stdout = []
-        self.stderr = []
-        self.runtime = self._setup_default_runtime()
+        self.runtime = ParserTests.DummyRuntime()
         AsyncManager.get_instance()
 
     def tearDown(self):
         AsyncManager.renew()
-
-    def _setup_default_runtime(self):
-        def _unwrap(i):
-            while isinstance(i, AsyncObservable):
-                i = i.peek()
-            return str(i)
-
-        active_runtime = AsyncObservable[str]
-
-        _builtin_stdout = AsyncObservable[Any]()
-        _builtin_stdout.subscribe(
-            Subscriber[str](
-                on_next = lambda s : self.stdout.append(_unwrap(s))))
-
-        _builtin_stderr = AsyncObservable[Any]()
-        _builtin_stderr.subscribe(
-            Subscriber[str](
-                on_next = lambda s : self.stderr.append(_unwrap(s))))
-
-        _builtin_runtime = AsyncObservable[str]()
-        _builtin_runtime.subscribe(active_runtime)
-
-
-        __main_module__ = Module("main", **{
-            "stdout" : _builtin_stdout,
-            "stderr" : _builtin_stderr,
-            "rt" : _builtin_runtime
-        })
-
-        file.File(__main_module__).compose()
-        #socket.Socket(__main_module__).compose()
-
-        return __main_module__
 
     def test_hello_world(self):
         src = """
@@ -59,8 +52,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- "hello, world!"
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["hello, world!"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["hello, world!"]
 
     def test_single_line_comment(self):
         src = """
@@ -68,8 +61,8 @@ class ParserTests(unittest.TestCase):
                 // stdout <- "hello, world!"
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == []
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == []
 
     def test_tuple(self):
         src = """
@@ -77,8 +70,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- ("the answer is", 42)
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["('the answer is', 42)"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["('the answer is', 42)"]
 
     def test_tuple_containing_an_expr(self):
         src = """
@@ -86,8 +79,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- ("the answer is", 40 + 2)
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["('the answer is', 42)"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["('the answer is', 42)"]
 
     def test_simple_addition(self):
         src = """
@@ -95,8 +88,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 3 + 4
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['7']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['7']
 
     def test_simple_addition_no_spaces(self):
         # nb addresses a bug with the lexer, whereby it was
@@ -106,8 +99,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 3+4
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['7']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['7']
 
     def test_parsing_numbers(self):
         src = """
@@ -117,8 +110,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 03 + .1
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['1.1', '2.1', '3.1']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['1.1', '2.1', '3.1']
 
     def test_simple_subtraction(self):
         src = """
@@ -126,8 +119,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 3 - 4
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['-1']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['-1']
 
     def test_simple_multi(self):
         src = """
@@ -135,8 +128,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 3 * 4
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['12']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['12']
 
     def test_simple_division(self):
         src = """
@@ -144,8 +137,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 12 / 4
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['3.0']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['3.0']
 
     def test_logical_and(self):
         src = """
@@ -156,8 +149,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- false and false
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["False", "False", "True", "False"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["False", "False", "True", "False"]
 
     def test_logical_or(self):
         src = """
@@ -168,8 +161,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- false or false
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["True", "True", "True", "False"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["True", "True", "True", "False"]
 
     def test_not(self):
         src = """
@@ -178,8 +171,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- ! false
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["False", "True"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["False", "True"]
 
     def test_precedence_of_ops(self):
         # nb https://www.tutorialspoint.com/python/operators_precedence_example.htm
@@ -192,8 +185,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 15 + (10 * 15) / 5
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["50.0", "90.0", "90.0", "90.0", "45.0"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["50.0", "90.0", "90.0", "90.0", "45.0"]
 
     def test_declare_vars(self):
         src = """
@@ -206,8 +199,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- (MEANING_OF_LIFE, greeting, truthy)
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["(42, 'Hello world', True)"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["(42, 'Hello world', True)"]
 
     def test_declared_vars_are_observables(self):
         src = """
@@ -216,11 +209,11 @@ class ParserTests(unittest.TestCase):
                 dec public y = 2
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        x_scope, x = self.runtime.locals["x"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        x_scope, x = self.runtime.main_module.locals["x"]
         assert x_scope == 'local'
         assert x.peek() == 1
-        y_scope, y = self.runtime.locals["y"]
+        y_scope, y = self.runtime.main_module.locals["y"]
         assert y_scope == 'public'
         assert y.peek() == 2
 
@@ -236,8 +229,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["3", "6"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["3", "6"]
 
     def test_computed_dependencies_w_indexing(self):
         src = """
@@ -251,8 +244,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["2", "4"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["2", "4"]
 
     def test_computed_lambda_style_syntax(self):
         src = """
@@ -266,8 +259,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["13", "15"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["13", "15"]
 
     def test_computed_lambda_style_syntax(self):
         src = """
@@ -279,8 +272,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["1", "2"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["1", "2"]
 
     def test_computed_lambda_style_syntax2(self):
         src = """
@@ -290,8 +283,8 @@ class ParserTests(unittest.TestCase):
                 // stdout <- x TODO , this will cause recursion - need to detect
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["Hello world"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["Hello world"]
 
     def test_computed_lambda_style_syntax3(self):
         src = """
@@ -303,8 +296,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["1", "2"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["1", "2"]
 
     def test_typings_are_optional(self):
         src = """
@@ -317,8 +310,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- (MEANING_OF_LIFE, greeting, truthy)
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["(42, 'Hello world', True)"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["(42, 'Hello world', True)"]
 
     def test_vars_are_immutable_within_scope(self):
         src = """
@@ -330,7 +323,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         with self.assertRaises(Exception) as e:
-            main_module = FloListenerImpl.loadString(src, self.runtime)
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
         assert e.exception.args == ("Variable 'x' is already defined",)
 
     def test_computed_addition_bind_to_public(self):
@@ -348,8 +341,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['17']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['17']
 
     def test_computed_addition_bind_to_public_async(self):
         src = """
@@ -365,8 +358,8 @@ class ParserTests(unittest.TestCase):
                 y <- 9
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['17', '17']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['17', '17']
 
     def test_computed_feedback_loop(self):
         src = """
@@ -381,7 +374,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         with self.assertRaises(RuntimeError) as re:
-            main_module = FloListenerImpl.loadString(src, self.runtime)
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
         assert re.exception.args == ("Cannot bind to a dependant",)
 
     def test_computed_feedback_loop_two_levels(self):
@@ -398,7 +391,7 @@ class ParserTests(unittest.TestCase):
             }
         """
         with self.assertRaises(RuntimeError) as re:
-            main_module = FloListenerImpl.loadString(src, self.runtime)
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
         assert re.exception.args == ("Cannot bind to a dependant",)
 
     def test_comparison_operators(self):
@@ -411,8 +404,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- 2 == 1
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['True', 'False', 'True', 'False', 'False']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['True', 'False', 'True', 'False', 'False']
 
     def test_declare_filter(self):
         src = """
@@ -431,8 +424,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['5', '6', '10']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['5', '6', '10']
 
     def test_declare_join(self):
         src = """
@@ -451,8 +444,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['1', '2', '3', '4']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['1', '2', '3', '4']
 
     def test_list_expressions(self):
         src = """
@@ -460,8 +453,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- (1,2, 3 + 4)
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['(1, 2, 7)']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['(1, 2, 7)']
 
     def test_list_index_expressions(self):
         src = """
@@ -469,8 +462,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- (1,2, 3 + 4)[1]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['2']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['2']
 
     def test_list_index_expressions2(self):
         src = """
@@ -479,8 +472,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- x[1]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['2']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['2']
 
     def test_list_index_expressions_nested(self):
         src = """
@@ -489,8 +482,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- x[2][0]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['3']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['3']
 
     def test_json_objects(self):
         src = """
@@ -498,8 +491,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- {"a" : 1, "b" : {"c" : "hello"}}
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["{'a': 1, 'b': {'c': 'hello'}}"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["{'a': 1, 'b': {'c': 'hello'}}"]
 
     def test_json_object_indexing(self):
         src = """
@@ -507,8 +500,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- {"a" : 1, "b" : {"c" : "hello"}}["a"]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["1"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["1"]
 
     def test_json_object_indexing2(self):
         src = """
@@ -516,8 +509,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- {"a" : 1, "b" : {"c" : "hello"}}["b"]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["{'c': 'hello'}"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["{'c': 'hello'}"]
 
     def test_json_object_indexing_nested(self):
         src = """
@@ -525,8 +518,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- {"a" : 1, "b" : {"c" : "hello"}}["b"]["c"]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['hello']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['hello']
 
     def test_json_object_indexing_nested2(self):
         src = """
@@ -535,8 +528,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- x["b"]["c"]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['hello']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['hello']
 
     def test_json_object_indexing_nested3(self):
         src = """
@@ -545,8 +538,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- x["b"][0]
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['1']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['1']
 
     def test_mix_dot_lookup_and_indexing(self):
         src = """
@@ -559,8 +552,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- b
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['2']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['2']
 
     def test_components(self):
         src = """
@@ -580,8 +573,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['17']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['17']
 
     def test_nested_modules1(self):
         src = """
@@ -593,8 +586,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- inner.x
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["hello from inner!"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["hello from inner!"]
 
     def test_nested_modules2(self):
         src = """
@@ -608,8 +601,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- middle.inner.x
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["hello from inner!"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["hello from inner!"]
 
     def test_import_func_from_python_stdlib(self):
         src = """
@@ -619,8 +612,8 @@ class ParserTests(unittest.TestCase):
                 math.ceil  <- 1.75
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['2']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['2']
 
     def test_import_func_from_local_module(self):
         src = """
@@ -630,8 +623,8 @@ class ParserTests(unittest.TestCase):
                 testimport.myfunc <- ("hello","imported module!")
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ['hello imported module!']
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ['hello imported module!']
 
     def test_file_reader_builtin(self):
         with open("test.log", "w") as f:
@@ -644,8 +637,8 @@ class ParserTests(unittest.TestCase):
                     reader.path <- "test.log"
                 }
             """
-            main_module = FloListenerImpl.loadString(src, self.runtime)
-            assert self.stdout == ["hello\n", "from logfile!"]
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+            assert self.runtime.stdout == ["hello\n", "from logfile!"]
         finally:
             os.remove("test.log")
 
@@ -660,7 +653,7 @@ class ParserTests(unittest.TestCase):
                     writer.write <- "hello, world!"
                 }
             """
-            main_module = FloListenerImpl.loadString(src, self.runtime)
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
             with open("test.log", "r") as f:
                 contents = f.read()
                 assert contents == "hello, world!"
@@ -678,7 +671,7 @@ class ParserTests(unittest.TestCase):
                     writer.append <- "\nline 2"
                 }
             """
-            main_module = FloListenerImpl.loadString(src, self.runtime)
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
             with open("test.log", "r") as f:
                 contents = f.read()
                 assert contents == "line 1\nline 2"
@@ -693,8 +686,8 @@ class ParserTests(unittest.TestCase):
                 stdout <- x <- y <- 8
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["8"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["8"]
 
     def test_bind_stmts_can_be_chained(self):
         src = """
@@ -709,8 +702,8 @@ class ParserTests(unittest.TestCase):
                 }
             }
         """
-        main_module = FloListenerImpl.loadString(src, self.runtime)
-        assert self.stdout == ["the message"]
+        main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert self.runtime.stdout == ["the message"]
 
 
 if __name__ == "__main__":
