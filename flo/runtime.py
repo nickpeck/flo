@@ -23,16 +23,14 @@ class Runtime(Subscriber[int]):
     def _restart(self):
         pass
 
-    def _exit(self):
-        sys.exit(0)
-
     async def on_next(self, value: int):
         if value == self.__class__.SIG_TERMINATE:
-            self._exit()
+            sys.exit(0)
         # TODO react to value, terminate, restart etc
 
     def load_builtins(self):
-        sub_modules = [mod_info[1] for mod_info in pkgutil.iter_modules(flobuiltins.__path__)] # type: ignore
+        sub_modules = [mod_info[1] for mod_info in
+                pkgutil.iter_modules(flobuiltins.__path__)] # type: ignore
         for mod_name in sub_modules:
             mod_name = importlib.import_module("flo.flobuiltins." + mod_name) # type: ignore
             for cls in inspect.getmembers(mod_name, inspect.isclass):

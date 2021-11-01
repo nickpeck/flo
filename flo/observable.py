@@ -8,7 +8,7 @@ class AsyncManager:
     """Singleton instance that allows us to enqueue coroutines
     for execution
     """
-    __instance__ = None
+    __instance__: Optional[AsyncManager] = None
     @staticmethod
     def get_instance():
         """Return the manager instance, or create and return
@@ -127,7 +127,7 @@ class AsyncObservable(Generic[T]):
         if other == self:
             raise Exception("AsyncObservable cannot bind to itself")
         subscr = Subscriber[T](
-            on_next = lambda head: other.write(head)
+            on_next = other.write
         )
         self.subscribe(subscr)
         return other
@@ -142,11 +142,11 @@ class AsyncObservable(Generic[T]):
             raise Exception("AsyncObservable cannot join to itself")
         joined = AsyncObservable[T]()
         subscr1 = Subscriber[T](
-            on_next = lambda head: joined.write(head)
+            on_next = joined.write
         )
         self.subscribe(subscr1)
         subscr2 = Subscriber[T](
-            on_next = lambda head: joined.write(head)
+            on_next = joined.write
         )
         other.subscribe(subscr2)
         return joined
@@ -161,7 +161,7 @@ class AsyncObservable(Generic[T]):
             if truthy:
                 filtered_observable.write(head)
         subscriber = Subscriber[T](
-            on_next = lambda x: _next(x)
+            on_next = _next
         )
         self.subscribe(subscriber)
         return filtered_observable
@@ -187,10 +187,6 @@ class AsyncObservable(Generic[T]):
         emits a new value, the computed result is written to the
         resulting observable.
         """
-        def unwrap(i):
-            while isinstance(i, AsyncObservable):
-                i = i.peek()
-            return i
         def _bind(func, *args, **kwargs):
             @wraps(func)
             def inner(*_args, **_kwags):

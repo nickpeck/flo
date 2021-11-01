@@ -17,7 +17,8 @@ from . FloParser import FloParser
 from . FloListener import FloListener
 from . runtime import Runtime
 from . module import Component, Filter, Module
-from . observable import AsyncObservable, Subscriber, ObservableWrapper, AsyncManager, unwrap, ReadWriteDelegator
+from . observable import (AsyncObservable, Subscriber,
+    ObservableWrapper, AsyncManager, unwrap, ReadWriteDelegator)
 
 class EOFException(Exception):
     """Indicates that the input could not be passed owing to
@@ -82,7 +83,7 @@ class FloListenerImpl(FloListener):
         signal.signal(signal.SIGINT, signal_handler)
         print('Press Ctrl+C to exit')
         if os.name != 'nt':
-            # pylint: disable no-member
+            # pylint: disable=no-member
             signal.pause()
         buffer = []
         listener = FloListenerImpl(None, True)
@@ -238,6 +239,7 @@ class FloListenerImpl(FloListener):
             rights[i] = int(rights[i])
         left = self.register.pop(-1)
 
+        # pylint: disable=unused-argument
         def _index(*args):
             nonlocal rights
             value = unwrap(left)[rights[0]]

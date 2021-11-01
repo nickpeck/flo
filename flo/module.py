@@ -9,7 +9,7 @@ from . observable import AsyncObservable
 class Module:
     def __init__(self, name, **opts):
         self.name = name
-        self.locals = {k:("local", opts[k]) for k in opts.keys()}
+        self.locals = {k:("local", v) for k,v in opts.items()}
         self.parent = None
 
     def _check_is_not_defined(self, name):
@@ -36,16 +36,14 @@ class Module:
         return str(self)
 
 class Component(Module):
-    def __init__(self, name, **opts):
-        super().__init__(name, **opts)
 
     def duplicate(self, **overrides):
         comp = Component(self.name)
         comp.locals = self.locals
-        for key in overrides.keys():
+        for key, value in overrides.items():
             if key in comp.locals:
                 access = comp.locals[key][0]
-                comp.locals[key] = (access, overrides[key])
+                comp.locals[key] = (access, value)
             else:
                 raise Exception("{} has no local attr '{}'".format(comp, key))
         return comp
