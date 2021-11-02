@@ -90,6 +90,7 @@ class FloListenerImpl(FloListener):
         walker = ParseTreeWalker()
         prompt = "> "
         while True:
+            # pylint: disable=broad-except
             buffer.append(input(prompt))
             code = " ".join(buffer)
             input_observable = InputStream(code)
@@ -284,6 +285,7 @@ class FloListenerImpl(FloListener):
 
     # Enter a parse tree produced by FloParser#simpleDeclaration.
     def enterSimpleDeclaration(self, ctx:FloParser.SimpleDeclarationContext):
+        # pylint: disable=too-many-branches
         children = [c.getText() for c in ctx.children]
         is_public = False
         if ctx.children[0].getText() == "public":
@@ -579,7 +581,7 @@ class FloListenerImpl(FloListener):
                     nonlocal reg
                     nonlocal values
                     _reg = reg[:]
-                    for i in range(len(values) - 1):
+                    for _i in range(len(values) - 1):
                         left = _reg[0]
                         right = _reg[1]
                         left.peek().bind_to(right.peek())
@@ -592,7 +594,7 @@ class FloListenerImpl(FloListener):
                 self.register = self.register[:len(values)+1] + [computed]
                 return
 
-            for i in range(len(values) - 1):
+            for _i in range(len(values) - 1):
                 left = self.register[0]
                 right = self.register[1]
                 left.bind_to(right)

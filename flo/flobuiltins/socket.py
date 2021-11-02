@@ -14,7 +14,8 @@ class Socket(ModuleBuilder):
         self._add_socket_client(socket)
         self.parent_module.declare_public("socket", socket)
 
-    def _add_socket_server(self, socket: Module):
+    @staticmethod
+    def _add_socket_server(socket: Module):
         """A simple asynchronus socket server
         - bind: tuple[str, int], accepts the hostname and port to bind to
         - bufferSize: int, accepts the request buffer size (default 256 bytes)
@@ -48,7 +49,7 @@ class Socket(ModuleBuilder):
                 handler = AsyncObservable()
                 handler.subscribe(
                     Subscriber(
-                        on_next = lambda response : _on_response_ready(response)
+                        on_next = _on_response_ready
                     )
                 )
                 messages.write((request, handler))
@@ -83,7 +84,8 @@ class Socket(ModuleBuilder):
 
         socket.declare_public("server", server)
 
-    def _add_socket_client(self, socket: Module):
+    @staticmethod
+    def _add_socket_client(socket: Module):
         """A simple asynchronus socket client
         - connectTo: tuple[str, int], accepts the hostname and port to connect to
         - bufferSize: int, accepts the request buffer size (default 256 bytes)

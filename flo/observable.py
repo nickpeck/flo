@@ -23,6 +23,7 @@ class AsyncManager:
         """Reset the AsyncManager instance
         """
         if AsyncManager.__instance__ is not None:
+            # pylint: disable=protected-access
             AsyncManager.__instance__._loop.close()
         AsyncManager.__instance__ = AsyncManager()
         return AsyncManager.__instance__
@@ -196,7 +197,7 @@ class AsyncObservable(Generic[T]):
 
         output_observable = AsyncObservable[T](None, dependants)
         bound_func = _bind(func, *dependants)
-        def _on_next(val):
+        def _on_next(_val):
             nonlocal bound_func
             nonlocal output_observable
             nonlocal dependants
