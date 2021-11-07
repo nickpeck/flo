@@ -218,6 +218,9 @@ class AsyncObservable(Generic[T]):
 
         return output_observable
 
+    def depends_upon(self, other: AsyncObservable):
+        return other in self._dependants
+
 class ReadWriteDelegator(AsyncObservable):
     """Construct an observable that delagtes both writes to another observable
     and reads to a computed observable into which the write

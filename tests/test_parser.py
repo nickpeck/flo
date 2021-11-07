@@ -91,6 +91,19 @@ class ParserTests(unittest.TestCase):
         main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
         assert self.runtime.stdout == ['7']
 
+    def test_cannot_use_self_in_expr(self):
+        src = """
+            module main {
+                dec x = 3
+                x <- x + 2
+                stdout <- x
+            }
+        """
+        with self.assertRaises(Exception) as e:
+            main_module = FloListenerImpl.loadString(src,  self.runtime.main_module)
+        assert e.exception.args ==\
+            ("Put expression violates dependancy constrants : x<-x+2",)
+
     def test_simple_addition_no_spaces(self):
         # nb addresses a bug with the lexer, whereby it was
         # attempting to parse '3+4' as a number

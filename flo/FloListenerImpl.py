@@ -525,9 +525,13 @@ class FloListenerImpl(FloListener):
     def exitCompound_expression_putvalue(self,
         ctx:FloParser.Compound_expression_putvalueContext):
         if len(ctx.children) == 3:
+            left = self.register[-2]
+            right = self.register[-1]
+            if right.depends_upon(left):
+                AsyncManager.get_instance().run()
+                raise Exception("Put expression violates dependancy constrants : "\
+                    + ctx.getText())
             if self._is_lambda:
-                left = self.register[-2]
-                right = self.register[-1]
                 placeholder = self.scope.locals["?"][1]
                 def _on_write():
                     nonlocal left
@@ -540,12 +544,12 @@ class FloListenerImpl(FloListener):
                 )
                 self.register = self.register[:-2] + [computed]
             else:
-                self.register[-2].write(self.register[-1])
+                left.write(right)
                 # if this is within a sync {...} block, the
                 # asyncio event loop is run to completion on each put value
                 if self._is_sync:
                     AsyncManager.get_instance().run()
-                self.register = self.register[:-1]
+                self.register = self.register[:-2] + [left]
 
     # Exit a parse tree produced by FloParser#compund_expression_tuple.
     def exitTuple(self, ctx:FloParser.TupleContext):
